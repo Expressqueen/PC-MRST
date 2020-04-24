@@ -1,0 +1,36 @@
+.organizational{
+    width: 1320px;
+    height: calc(100vh - 92px);
+    margin: 0 auto;
+    margin-top:20px;
+    .leftbar{
+        width: 300px;
+        margin-right:20px;
+        background: #ffffff;
+        height: 100%;
+        padding: 12px 12px 0 12px;
+        .title{
+            padding:20px 0 14px 0;
+            color: #3A454B;
+        }
+        .departlist{
+            li{
+                padding: 13px 12px;
+                color: #585F65;
+            }
+            & :hover{
+                cursor: pointer;
+            }
+            & .selectedli{
+                background:rgba(240,244,247,1);
+                color:#096DD9;
+                font-weight: bold;
+            }
+        }
+    }
+    .rightbar{
+        width: 1000px;
+        background: #ffffff;
+        height: 100%;
+    }
+}

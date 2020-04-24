@@ -11,12 +11,12 @@ const router=new Router({
     {
       path: '/',
       component: Layout,
-      redirect: '/404',
+      redirect: '/origanizational',
       children: [{
-        path: '404',
-        name: '404',
-        component: () => import('@/views/404'),
-        meta: { title: '404', icon: '404' }
+        path: 'origanizational',
+        name: 'origanizational',
+        component: () => import('@/views/Organizational/index'),
+        meta: { title: '组织架构', icon: '404'}
       }]
     },
   
