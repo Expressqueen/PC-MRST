@@ -30,9 +30,7 @@ export default {
     }
   },
   mounted(){
-    debugger
     apiAddress().then(res=>{
-      debugger
       console.log(res,'这是响应的结果')
     })
   }
