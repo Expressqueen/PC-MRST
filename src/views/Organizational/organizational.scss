@@ -3,6 +3,28 @@
     height: calc(100vh - 92px);
     margin: 0 auto;
     margin-top:20px;
+    .departlist{
+        li{
+            padding: 12px 12px;
+            color: #585F65;
+        }
+        & :hover{
+            cursor: pointer;
+        }
+        & .selectedli{
+            background:rgba(240,244,247,1);
+            color:#096DD9;
+            font-weight: bold;
+            .el-dropdown{
+                color:#096DD9;
+            }
+        }
+
+    }
+    .setname i{
+       color: #3A454B; 
+       font-size: 16px;
+    }
     .leftbar{
         width: 300px;
         margin-right:20px;
@@ -13,24 +35,62 @@
             padding:20px 0 14px 0;
             color: #3A454B;
         }
-        .departlist{
-            li{
-                padding: 13px 12px;
-                color: #585F65;
-            }
-            & :hover{
-                cursor: pointer;
-            }
-            & .selectedli{
-                background:rgba(240,244,247,1);
-                color:#096DD9;
-                font-weight: bold;
-            }
-        }
+        
     }
     .rightbar{
         width: 1000px;
         background: #ffffff;
         height: 100%;
+        padding-top:40px;
+        li{
+            line-height: 1;
+        }
+        .rightmenu{
+            width: 199px;
+            border-right: 1px solid #eeeeee;
+            height: 100%;
+            padding: 0 12px;
+            .menutitle{
+                font-size: 16px;
+                color: #3A454B;
+                font-weight: bold;
+                padding-left: 11px;
+                font-family: MicrosoftYaHei-Bold;
+            }
+            .childmunulist{
+                margin: 12px -12px -12px;
+                background: #fff;
+                padding-left: 12px;
+                li{
+                    padding:12px 0;
+                    color: #999999;
+                }
+            }
+        }
+        .rightres{
+            width: 800px;
+            height: 100%;
+            padding:0 20px;
+            .rightrestitle{
+                border-bottom: 1px solid #F4F5F7;
+                overflow: hidden;
+                padding: 0 12px 15px 12px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #3A454B;
+            }
+            .restable{
+                i{
+                    font-size: 16px;
+                }
+            }
+            
+        }
+    }
+    .el-select{
+        width: 100%;
+    }
+    .el-dialog__footer{
+        text-align: center;
     }
 }
