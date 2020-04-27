@@ -110,9 +110,13 @@
         <el-button type="primary" @click="setDiorgan()">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="邀请成员" :visible.sync="invitemembers" width="800px" height="300px">
+        <InviteMembers></InviteMembers>
+    </el-dialog>
   </div>
 </template>
 <script>
+import InviteMembers from '@/views/Organizational/Invitemembers'
 import { removeClass } from "@/utils/index";
 // import { formatTime } from "../../utils";
 export default {
@@ -122,6 +126,9 @@ export default {
           type: String,
           default: '第一事业部'
       }
+  },
+  components:{
+      InviteMembers
   },
   data() {
     return {
@@ -185,7 +192,8 @@ export default {
       AddOrgan: {
         name: "",
         role: ""
-      }
+      },
+      invitemembers:true
     };
   },
   methods: {
