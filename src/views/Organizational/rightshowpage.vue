@@ -214,7 +214,6 @@ export default {
       this.restableData.splice(index, 1);
     },
     Secondary(command) {
-        debugger
         switch(command){
             case 'Add':
                 this.AddOrganization=true;
