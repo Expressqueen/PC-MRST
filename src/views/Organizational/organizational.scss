@@ -48,7 +48,7 @@
         .rightmenu{
             width: 199px;
             border-right: 1px solid #eeeeee;
-            height: 100%;
+            height: 100vh;
             padding: 0 12px;
             .menutitle{
                 font-size: 16px;
@@ -60,10 +60,13 @@
             .childmunulist{
                 margin: 12px -12px -12px;
                 background: #fff;
-                padding-left: 12px;
+                //padding-left: 12px;
                 li{
-                    padding:12px 0;
-                    color: #999999;
+                    padding:12px;
+                    font-weight: normal;
+                }
+                li.selectedli{
+                    font-weight: bold;
                 }
             }
         }

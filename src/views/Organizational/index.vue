@@ -10,9 +10,16 @@
             @click="collaspe()"
           ></i>
         </p>
-        <span class="setname right">
-          <i class="el-icon-setting"></i>
-        </span>
+        <el-dropdown class="setname right" @command="Department">
+          <span class="el-dropdown-link">
+            <i class="el-icon-s-tools"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="Add">创建部门</el-dropdown-item>
+            <el-dropdown-item command="edit">编辑部门</el-dropdown-item>
+            <el-dropdown-item command="del">删除部门</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
       <ul class="departlist clearfix" v-if="collas==true">
         <li
@@ -24,158 +31,134 @@
       </ul>
     </div>
     <div class="rightbar right">
-      <div class="rightmenu left">
-        <p class="menutitle">第一事业部</p>
-        <ul class="departlist clearfix">
-          <li
-            v-for="(item,index) in rightmenulist"
-            :key="index"
-            @click="selectedmenubar($event,index)"
-            :class="{selectedli:index==menucurrent}"
-          >
-            <p>
-                {{item.title}}
-                （{{item.num}}）
-                <i
-                :class="[index==menucurrent?'el-icon-caret-top':'el-icon-caret-bottom','right']"
-                v-if="item.child!=undefined"
-                ></i>
-            </p>
-            <ul class="childmunulist" v-if="item.child!=undefined" v-show="index==menucurrent">
-                <li>
-                    活动运营（2）
-                </li>
-                <li>
-                    市场运营（3）
-                </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-      <div class="rightres right">
-        <div class="rightrestitle">
-          <span class="mark left">全部</span>
-          <el-dropdown class="setname right" @command="AddCommand">
-            <span class="el-dropdown-link">
-              <i class="el-icon-setting"></i>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="AddOrganization">创建组织</el-dropdown-item>
-              <el-dropdown-item>添加成员</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-        <div class="restable">
-          <el-table :data="restableData" style="width: 100%">
-            <el-table-column prop="date" label="姓名" width="120"></el-table-column>
-            <el-table-column prop="name" label="部门" width="180"></el-table-column>
-            <el-table-column prop="address" label="角色"></el-table-column>
-            <el-table-column prop="address" label="操作" align="right" width="80">
-              <template slot-scope="scope">
-                <i class="el-icon-edit-outline" @click="handleClick(scope.row)"></i>
-                <i
-                  class="el-icon-delete"
-                  style="margin-left:10px"
-                  @click="deleteline(scope.$index,scope.row)"
-                ></i>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
+      <RightShowpage :themetitle="righttitle"></RightShowpage>
     </div>
-    <el-dialog title="添加组织架构" :visible.sync="AddOrganization">
-      <el-form :model="AddOrgan" style="width:300px;margin:0 auto;">
-        <el-form-item label="名称" :label-width="formLabelWidth">
-          <el-input v-model="AddOrgan.name" autocomplete="off" ></el-input>
+    <el-dialog :title="Departmenttitle" :visible.sync="AddDepartment" width="800px">
+      <el-form
+        :model="AddDepart"
+        :rules="AddDepartrules"
+        ref="AddDepart"
+        style="width:300px;margin:0 auto;"
+      >
+        <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
+          <el-input v-model="AddDepart.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="角色" :label-width="formLabelWidth">
-          <el-select v-model="AddOrgan.role" placeholder="请选择活动区域">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+        <el-form-item label="角色" :label-width="formLabelWidth" prop="role">
+          <el-select v-model="AddDepart.roleval" placeholder="请选择角色" filterable>
+            <el-option
+              v-for="(item,index) in AddDepart.role"
+              :key="index"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="AddOrganization = false">确 定</el-button>
+        <el-button type="primary" @click="AddAddDepartment('AddDepart')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
+import RightShowpage from './rightshowpage'
 export default {
   name: "organizational",
+  components:{RightShowpage},
   data() {
     return {
       search: "",
       copycurrent: 0,
-      menucurrent: 0,
+      AddDepartment:false,
       collas: true,
+      Departmenttitle:"创建部门",
+      righttitle:"第一事业部",
       departlist: [
         { title: "第一事业部", value: "1" },
         { title: "第二事业部", value: "2" },
         { title: "门店部", value: "3" },
         { title: "研发部", value: "4" }
       ],
-      rightmenulist: [
-        { title: "全部", value: "1", num: 12 },
-        { title: "总经理", value: "2", num: 1 },
-        { title: "运营", value: "3", num: 5, child: [] },
-        { title: "音乐合作拓展", value: "4", num: 3 },
-        { title: "商务渠道拓展", value: "5", num: 3 }
-      ],
-      restableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎1",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎2",
-          address: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎3",
-          address: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎4",
-          address: "上海市普陀区金沙江路 1516 弄"
-        }
-      ],
-      selectdepartlist: "",
-      AddOrganization: false,
-      formLabelWidth: "60px",
-      AddOrgan: {
-        name: "",
-        role: ""
+      AddDepart:{
+        name:"",
+        role:[
+          {value:"超级管理员",label:"超级管理员"},
+          {value:"第一事业部管理员",label:"第一事业部管理员"},
+          {value:"第二事业部管理员",label:"第二事业部管理员"},
+          {value:"第三事业部管理员",label:"第三事业部管理员"},
+          {value:"第四事业部管理员",label:"第四事业部管理员"}
+        ],
+        roleval:''
+      },
+      formLabelWidth:"60px",
+      AddDepartrules:{
+        name:[{required:true,message:"请输入部门名称",trigger:'blur'}],
+        role:[{required:true,message:'请选择角色',trigger:'change'}]
       }
+        
+     
     };
   },
   methods: {
     selectedbar(obj, index) {
       this.copycurrent = index;
+      this.righttitle=this.departlist[index].title;
     },
     collaspe() {
       this.collas = !this.collas;
     },
-    selectedmenubar(obj, index) {
-        if(this.menucurrent==index){
-            obj.target.parentNode.querySelector('ul').style.display==""?obj.target.parentNode.querySelector('ul').style.display="none"
-            :obj.target.parentNode.querySelector('ul').style.display="";
-            obj.target.parentNode.querySelector('i').className.indexOf("el-icon-caret-top")==-1?obj.target.parentNode.querySelector('i').setAttribute("class",'el-icon-caret-top right')
-            :obj.target.parentNode.querySelector('i').setAttribute("class",'el-icon-caret-bottom right')
-       }
-      this.menucurrent = index;
+    Department(commond){
+      if(commond=="Add"){
+        this.AddDepartment = true;
+        this.Departmenttitle="创建部门";
+      }else if(commond=="edit"){
+        this.Departmenttitle="编辑部门";
+        let selectdept=this.departlist[this.copycurrent];
+        this.AddDepart.name=selectdept.title;
+        this.AddDepart.roleval="超级管理员";
+        this.AddDepartment = true;
+      }else if(commond=="del"){
+        this.$confirm('此操作将永久删除该部门, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.departlist.splice(this.copycurrent,1);
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除该部门'
+          });          
+        });
+      }
     },
-    deleteline(index, data) {
-      this.restableData.splice(index, 1);
-    },
-    AddCommand(command) {
-      this[command] = true;
+    AddAddDepartment(formName){
+      var _this=this;
+      this.$refs[formName].validate((valid)=>{
+        if(valid){
+          if(_this.Departmenttitle=="创建部门"){
+            var addrole={};
+            addrole.title=_this.AddDepart.name;
+            addrole.value=_this.AddDepartment.roleval;
+            _this.departlist.push(addrole);
+          }else if(_this.Departmenttitle=="编辑部门"){
+            let selectdept=_this.departlist[_this.copycurrent];
+            selectdept.title=_this.AddDepart.name;
+            selectdept.value=_this.AddDepart.roleval;
+          }
+          
+          _this.AddDepartment = false;
+          _this.$message.success(_this.Departmenttitle+"成功!");
+        }else{
+          this.$message.error("请输入必填项!");
+          return false;
+        }
+      })
+      
     }
   }
 };

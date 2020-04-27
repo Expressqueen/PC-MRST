@@ -47,3 +47,28 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+.el-dialog__header{
+  height: 48px;
+    line-height: 48px;
+    padding: 0 10px;
+    background: #F0F4F7;
+    border-radius: 4px;
+}
+.el-dialog__headerbtn{
+  top:15px;
+}
+.el-dialog__title{
+  font-size: 16px;
+}
+.el-dialog{
+  border-radius: 4px;
+}
+.el-form-item{
+  margin-bottom: 20px;
+}
+.disable{
+  color:#C0C4CC;
+}
+.del,.red{
+  color:#F56C6C;
+}
