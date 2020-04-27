@@ -232,9 +232,9 @@ export default {
     //增加修改确定方法
     setDiorgan(){
         if(this.setDioTitle="创建部门"){
-            this.$message("创建部门")
+            this.$message("创建部门成功")
         }else if(this.setDioTitle="编辑部门"){
-
+             this.$message("编辑部门成功")
         }
 
     },
