@@ -1,62 +1,43 @@
 <template>
   <div class="rightshowpage">
-    <div class="rightmenu left">
-      <p class="menutitle">{{themetitle}}</p>
+    <div class="rightmenu left" v-show="rightchild.isMembers">
+      <p class="menutitle">{{rightchild.righttitle}}</p>
       <ul class="departlist clearfix">
         <li
           v-for="(item,index) in rightmenulist"
           :key="index"
-          @click="openchildlist($event,index)"
-          :class="{selectedli:index==menucurrent}"
+          @click="openchildlist($event,item,index)"
+          :class="[{selectedli:index==menucurrent},index!=0?ishide:'show',{isCshow:item.child.length>0}]"
         >
           <p class="Fshowtitle">
-             <span class="showrightitle">{{item.title}}</span>
-            （{{item.num}}）
+             <span class="showrightitle">{{item.depname}}</span>
+            （{{item.udep_count}}）
+
             <i
-              :class="[isopenchild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
-              v-if="item.child!=undefined"
+              :class="[ishide=='show'?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+              v-if="item.pid==0"
             ></i>
+            <i
+              :class="[isCshowpage?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+             v-else-if="item.child.length>0"
+            ></i>
+            <ul class="childmunulist" v-show="item.child.length>0&&isCshowpage">
+              <li v-for="(Citem,Cindex) in item.child" :key="Cindex" @click.stop="Cselectlist($event,Citem,Cindex)"
+                :class="{iscselect:Cindex==Cselectindex}">
+                <p class="Cshowtitle">
+                    <span class="showrightitle">{{Citem.depname}}</span>
+                  （{{Citem.udep_count}}）
+                </p>
+              </li>
+            </ul>
           </p>
-          <ul class="childmunulist" v-if="item.child!=undefined" v-show="isopenchild">
-            <li
-              v-for="(Citem,Cindex) in item.child"
-              :key="Cindex"
-              @click.stop="Cselectedlist($event,Cindex,Citem.child!=undefined)"
-              :class="{selectedli:Cindex==Cselectindex}"
-            >
-              <p class="Cshowtitle">
-                  <span class="showrightitle">{{Citem.title}}</span>
-                （{{Citem.num}}）
-                <i
-                  :class="[isopenShild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
-                  v-if="Citem.child!=undefined"
-                ></i>
-              </p>
-              <ul class="childmunulist" v-if="Citem.child!=undefined" v-show="isopenShild">
-                <li
-                  v-for="(Sitem,Sindex) in Citem.child"
-                  :key="Sindex"
-                  @click.stop="Sselectedlist($event,Sindex)"
-                >
-                  <p class="Sshowtitle">
-                     <span class="showrightitle">{{Sitem.title}}</span>
-                    （{{Sitem.num}}）
-                    <i
-                      :class="[Sindex==Sselectindex?'el-icon-caret-top':'el-icon-caret-bottom','right']"
-                      v-if="Sitem.child!=undefined"
-                    ></i>
-                  </p>
-                </li>
-              </ul>
-            </li>
-          </ul>
         </li>
       </ul>
     </div>
     <div class="rightres right">
       <div class="rightrestitle">
         <span class="mark left">{{showselecttitle}}</span>
-        <el-dropdown class="setname right" @command="Secondary">
+        <el-dropdown class="setname right" @command="Secondary" v-show="rightchild.isMembers">
           <span class="el-dropdown-link">
             <i class="el-icon-s-tools"></i>
           </span>
@@ -69,8 +50,13 @@
         </el-dropdown>
       </div>
       <div class="restable">
-        <el-table :data="restableData" style="width: 100%" :show-header="false">
-          <el-table-column prop="date" label="姓名" width="120"></el-table-column>
+        <el-table :data="restableData" style="width: 100%" :show-header="false" @row-click="showdetailinfo">
+          <el-table-column prop="date" label="姓名" width="120">
+            <template slot-scope="scope">
+               <el-avatar size="medium" :src="circleUrl" class="left"></el-avatar>
+               <span class="left avafont">{{scope.row.date}}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="name" label="部门" width="180"></el-table-column>
           <el-table-column prop="role" label="角色"></el-table-column>
           <el-table-column prop="operation" label="操作" align="right" width="100">
@@ -83,10 +69,10 @@
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>管理员</el-dropdown-item>
-                        <el-dropdown-item>成员</el-dropdown-item>
-                        <el-dropdown-item command="disaccount" class="disable">停用账号</el-dropdown-item>
-                        <el-dropdown-item class="del">删除账号</el-dropdown-item>
+                        <el-dropdown-item :command="{type:'admin',scope}">管理员</el-dropdown-item>
+                        <el-dropdown-item :command="{type:'Members',scope}">成员</el-dropdown-item>
+                        <el-dropdown-item :command="{type:'disaccount',scope}" class="disable">停用账号</el-dropdown-item>
+                        <el-dropdown-item :command="{type:'del',scope}" class="del">删除账号</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </template>
@@ -94,7 +80,7 @@
         </el-table>
       </div>
     </div>
-    <el-dialog :title="setDioTitle" :visible.sync="AddOrganization" width="800px">
+    <el-dialog :title="setDioTitle" :visible.sync="AddOrganization" width="800px" :close-on-click-modal="false">
       <el-form :model="AddOrgan" style="width:300px;margin:0 auto;">
         <el-form-item label="名称" :label-width="formLabelWidth">
           <el-input v-model="AddOrgan.name" autocomplete="off"></el-input>
@@ -110,82 +96,69 @@
         <el-button type="primary" @click="setDiorgan()">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="邀请成员" :visible.sync="invitemembers" width="800px" height="300px">
+    <el-dialog title="邀请成员" :visible.sync="invitemembers" width="800px" height="300px" :close-on-click-modal="false">
         <InviteMembers></InviteMembers>
     </el-dialog>
+    <el-dialog title="" :visible.sync="detailedinfo"
+    width="30%" :close-on-click-modal="false">
+      <DetailInfo></DetailInfo>
+  </el-dialog>
   </div>
 </template>
 <script>
 import InviteMembers from '@/views/Organizational/Invitemembers'
-import { removeClass } from "@/utils/index";
-// import { formatTime } from "../../utils";
+import DetailInfo from '@/views/Organizational/detailinfo'
+import {hasClass} from '@/utils/index'
 export default {
   name: "rightshowpage",
   props:{
-      themetitle:{
-          type: String,
-          default: '第一事业部'
+    rightchild:{
+      type:Object,
+      default:function(){
+        return {righttitle:'第一事业部'}
       }
+    },
   },
   components:{
-      InviteMembers
+      InviteMembers,DetailInfo
   },
   data() {
     return {
+      ishide:'show',
       menucurrent: 0,
+      isCshowpage:false,
       Cselectindex: null,
-      Sselectindex: null,
-      isopenchild: true,
-      isopenShild: false,
+      detailedinfo:false,
       showselecttitle:"全部",
       setDioTitle:"创建部门",
-      rightmenulist: [
-        {
-          title: "全部",
-          value: "1",
-          num: 12,
-          child: [
-            { title: "总经理", value: "2", num: 1 },
-            {
-              title: "运营",
-              value: "3",
-              num: 5,
-              child: [
-                { title: "部门运营", value: "3-1",num:1 },
-                { title: "市场运营", value: "3-2" ,num:4}
-              ]
-            },
-            { title: "音乐合作拓展", value: "4", num: 3 },
-            { title: "商务渠道拓展", value: "5", num: 3 }
-          ]
-        }
-      ],
+      rightmenulist: [],
       restableData: [
         {
-          date: "2016-05-02",
+          date: "明明",
           name: "王小虎1",
           role: "上海市普陀区金沙江路 1518 弄",
           operation:"待审核"
         },
         {
-          date: "2016-05-04",
+          date: "张三",
           name: "王小虎2",
           role: "上海市普陀区金沙江路 1517 弄",
           operation:"管理员"
         },
         {
-          date: "2016-05-01",
+          date: "李四",
           name: "王小虎3",
           role: "上海市普陀区金沙江路 1519 弄",
           operation:"管理员"
         },
         {
-          date: "2016-05-03",
+          date: "王五",
           name: "王小虎4",
           role: "上海市普陀区金沙江路 1516 弄",
           operation:"成员"
         }
       ],
+      circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       selectdepartlist: "",
       AddOrganization: false,
       formLabelWidth: "60px",
@@ -193,30 +166,27 @@ export default {
         name: "",
         role: ""
       },
-      invitemembers:true
+      invitemembers:false
     };
   },
   methods: {
-    openchildlist(obj, index) {
-      if (this.menucurrent == index) this.isopenchild = !this.isopenchild;
+    //设置全部展开折叠功能
+    openchildlist(obj,item,index){
+      if(item.pid==0&&this.menucurrent==index)
+      this.ishide=="hide"?this.ishide='show':this.ishide='hide';
+      if(hasClass(obj.currentTarget,'isCshow')){
+        this.isCshowpage=!this.isCshowpage;
+      }else{
+        this.isCshowpage=false;
+      }
       this.menucurrent = index;
-      this.Cselectindex = null;
-      this.isopenShild=false;
-      this.showselecttitle=obj.currentTarget.querySelector("p span.showrightitle").innerText;
+      this.showselecttitle=item.depname;
+      this.Cselectindex=null;
     },
-    Cselectedlist(obj, Cindex,isse) {
-      if(!isse)
-      this.isopenShild=false;
-      if(this.Cselectindex == Cindex||isse)
-      this.isopenShild=!this.isopenShild;
-      this.Cselectindex = Cindex;
-      this.menucurrent++;
-      this.showselecttitle=obj.currentTarget.querySelector("p span.showrightitle").innerText;
-    },
-    Sselectedlist(obj,Sindex){
-        this.Sselectindex = Sindex;
-        this.Cselectindex=null;
-        this.showselecttitle=obj.currentTarget.querySelector("p span.showrightitle").innerText;
+    //设置三级自己选中事件，组织冒泡
+    Cselectlist(obj,item,index){
+      this.showselecttitle=item.depname;
+      this.Cselectindex=index;
     },
     deleteline(index, data) {
       this.restableData.splice(index, 1);
@@ -233,6 +203,7 @@ export default {
             case 'Del':
                 break;
             case 'Inmembers':
+                this.invitemembers=true;
                 break;
         }
     },
@@ -247,11 +218,25 @@ export default {
     },
     //显示列表权限修改
     Setrole(command){
-        if(command=="disaccount"){
-
-        }
+      switch(command.type){
+        case 'admin':
+            command.scope.row.operation="管理员"
+          break;
+        case 'Members':
+            command.scope.row.operation="成员"
+            break;
+        case 'disaccount':
+            command.scope.row.operation="停用"
+            break;
+        case 'del':
+            this.restableData.splice(command.scope.$index, 1);
+            break;
+      }
     },
-    
+    //table行单机事件
+    showdetailinfo(row,column,event){
+      this.detailedinfo=true;
+    }
   }
 };
 </script>

@@ -1,7 +1,8 @@
 <template>
   <div class="organizational">
     <div class="leftbar left">
-      <el-input placeholder="请输入内容" prefix-icon="el-icon-search" v-model="search"></el-input>
+      <el-input placeholder="请输入内容" prefix-icon="el-icon-search" v-model="search" clearable 
+      @keyup.enter.native="doSearch" @clear="clearSearch"></el-input>
       <div class="title">
         <p class="titlename left">
           乐播新瑞(北京)文化传媒有限公司
@@ -10,7 +11,7 @@
             @click="collaspe()"
           ></i>
         </p>
-        <el-dropdown class="setname right" @command="Department">
+        <el-dropdown class="setname right" @command="Department" v-show="isMembers">
           <span class="el-dropdown-link">
             <i class="el-icon-s-tools"></i>
           </span>
@@ -21,17 +22,22 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
-      <ul class="departlist clearfix" v-if="collas==true">
+      <ul class="departlist clearfix" v-if="collas==true" v-show="isMembers">
         <li
           v-for="(item,index) in departlist"
           :key="index"
           @click="selectedbar($event,index)"
           :class="{selectedli:index==copycurrent}"
-        >{{item.title}}</li>
+        >{{item.depname}}</li>
+      </ul>
+      <ul class="departlist clearfix" v-show="!isMembers">
+        <li class="selectedli realion">相关成员</li>
       </ul>
     </div>
     <div class="rightbar right">
-      <RightShowpage :themetitle="righttitle"></RightShowpage>
+      <RightShowpage 
+         :rightchild="childlist"
+         ref='rightshowpage' ></RightShowpage>
     </div>
     <el-dialog :title="Departmenttitle" :visible.sync="AddDepartment" width="800px">
       <el-form
@@ -62,6 +68,7 @@
 </template>
 <script>
 import RightShowpage from './rightshowpage'
+import {AJuDeps,apiAddress} from '@/api/index'
 export default {
   name: "organizational",
   components:{RightShowpage},
@@ -73,12 +80,7 @@ export default {
       collas: true,
       Departmenttitle:"创建部门",
       righttitle:"第一事业部",
-      departlist: [
-        { title: "第一事业部", value: "1" },
-        { title: "第二事业部", value: "2" },
-        { title: "门店部", value: "3" },
-        { title: "研发部", value: "4" }
-      ],
+      departlist: [],
       AddDepart:{
         name:"",
         role:[
@@ -94,15 +96,32 @@ export default {
       AddDepartrules:{
         name:[{required:true,message:"请输入部门名称",trigger:'blur'}],
         role:[{required:true,message:'请选择角色',trigger:'change'}]
+      },
+      isMembers:true,
+      childlist:{
+        righttitle:"",
+        isMembers:true
       }
-        
      
     };
   },
+  mounted(){
+    AJuDeps().then(res=>{
+      this.setdata=res.data.data;
+      this.departlist=this.setdata.FirstList;  //获取当前部门菜单
+      let showchildlistid=this.setdata.FirstList[this.copycurrent].id;  //获取当前选中部门的id
+      this.childlist.righttitle=this.setdata.FirstList[this.copycurrent].depname    //设置显示菜单的父级部门
+      this.$refs['rightshowpage'].rightmenulist=this.setdata.TwoList[showchildlistid]; //获取当前部门id对应的子部门
+      console.log(res,'这是响应的结果')
+    })
+  },
   methods: {
+    //菜单切换更改右侧部门菜单和数据
     selectedbar(obj, index) {
       this.copycurrent = index;
-      this.righttitle=this.departlist[index].title;
+      this.childlist.righttitle=this.departlist[index].depname;  //根据选中部门设置右侧title
+      let selectdepyid=this.departlist[index].id;
+      this.$refs['rightshowpage'].rightmenulist=this.setdata.TwoList[selectdepyid]; //根据选中部门显示右侧title
     },
     collaspe() {
       this.collas = !this.collas;
@@ -159,6 +178,17 @@ export default {
         }
       })
       
+    },
+    //搜索成员
+    doSearch(){
+      this.isMembers=false;
+      debugger
+      this.$refs['rightshowpage'].showselecttitle="相关成员（1）"
+    },
+    //去除搜索
+    clearSearch(){
+      this.isMembers=true;
+      this.$refs['rightshowpage'].showselecttitle="全部"
     }
   }
 };

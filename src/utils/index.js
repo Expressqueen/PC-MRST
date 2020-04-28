@@ -37,7 +37,7 @@ export function parseTime(time, cFormat) {
   const time_str = format.replace(/{([ymdhisa])+}/g, (result, key) => {
     const value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
-    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value ] }
+    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value] }
     return value.toString().padStart(2, '0')
   })
   return time_str
@@ -97,11 +97,44 @@ export function param2Obj(url) {
   }
   return JSON.parse(
     '{"' +
-      decodeURIComponent(search)
-        .replace(/"/g, '\\"')
-        .replace(/&/g, '","')
-        .replace(/=/g, '":"')
-        .replace(/\+/g, ' ') +
-      '"}'
+    decodeURIComponent(search)
+      .replace(/"/g, '\\"')
+      .replace(/&/g, '","')
+      .replace(/=/g, '":"')
+      .replace(/\+/g, ' ') +
+    '"}'
   )
+}
+
+//获取所有兄弟节点
+export function siblings(elm) {
+  var a = [];
+  var p = elm.parentNode.children;
+  for (var i = 0, pl = p.length; i < pl; i++) {
+    if (p[i] !== elm) a.push(p[i]);
+  }
+  return a;
+}
+//判断class是否存在
+export function hasClass(ele, cls) {
+  return ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
+}
+//为指定的dom元素增加样式
+export function addClass(ele, cls) {
+  if (!this.hasClass(ele, cls)) ele.className += " " + cls;
+}
+//为指定的dom元素删除样式
+export function removeClass(ele, cls) {
+  if (hasClass(ele, cls)) {
+      var reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
+      ele.className = ele.className.replace(reg, " ");
+  }
+}
+//实现toggle class功能
+export function toggleClass(ele,cls){ 
+  if(hasClass(ele,cls)){ 
+      removeClass(ele, cls); 
+  }else{ 
+      addClass(ele, cls); 
+  } 
 }

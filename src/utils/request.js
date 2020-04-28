@@ -4,19 +4,21 @@ import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
-/* 判断环境 */
-// if (process.env.NODE_ENV == 'development') {    
-//   axios.defaults.baseURL = 'https://www.baidu.com';} 
-// else if (process.env.NODE_ENV == 'debug') {    
-//   axios.defaults.baseURL = 'https://www.ceshi.com';
-// } 
-// else if (process.env.NODE_ENV == 'production') {    
-//   axios.defaults.baseURL = 'https://www.production.com';
-// }
+
+//注册axios
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   timeout: 5000 
 })
+/* 判断环境 */
+if (process.env.NODE_ENV == 'development') {    
+  service.defaults.baseURL = 'http://39.97.165.143/api';} 
+else if (process.env.NODE_ENV == 'debug') {    
+  service.defaults.baseURL = 'https://www.ceshi.com';
+} 
+else if (process.env.NODE_ENV == 'production') {    
+  service.defaults.baseURL = 'https://www.production.com';
+}
 //post请求头的设置
 service.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 // 请求拦截
@@ -49,7 +51,7 @@ service.interceptors.response.use(
       }    
   },    
   // 服务器状态码不是2开头的的情况
-  error => {            
+  error => {      
       if (error.response.status) {            
           switch (error.response.status) {                
               // 401: 未登录
