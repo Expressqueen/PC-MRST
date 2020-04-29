@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import {apiAddress} from '@/api/index'
+// import {apiAddress} from '@/api/index'
 export default {
   name: 'Page404',
   computed: {
@@ -30,9 +30,7 @@ export default {
     }
   },
   mounted(){
-    apiAddress().then(res=>{
-      console.log(res,'这是响应的结果')
-    })
+    
   }
 }
 </script>

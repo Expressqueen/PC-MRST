@@ -11,7 +11,7 @@
             @click="collaspe()"
           ></i>
         </p>
-        <el-dropdown class="setname right" @command="Department" v-show="isMembers">
+        <el-dropdown class="setname right" @command="Department" v-show="childlist.isMembers">
           <span class="el-dropdown-link">
             <i class="el-icon-s-tools"></i>
           </span>
@@ -22,7 +22,7 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
-      <ul class="departlist clearfix" v-if="collas==true" v-show="isMembers">
+      <ul class="departlist clearfix" v-if="collas==true" v-show="childlist.isMembers">
         <li
           v-for="(item,index) in departlist"
           :key="index"
@@ -30,7 +30,7 @@
           :class="{selectedli:index==copycurrent}"
         >{{item.depname}}</li>
       </ul>
-      <ul class="departlist clearfix" v-show="!isMembers">
+      <ul class="departlist clearfix" v-show="!childlist.isMembers">
         <li class="selectedli realion">相关成员</li>
       </ul>
     </div>
@@ -97,22 +97,23 @@ export default {
         name:[{required:true,message:"请输入部门名称",trigger:'blur'}],
         role:[{required:true,message:'请选择角色',trigger:'change'}]
       },
-      isMembers:true,
+      // isMembers:true,
       childlist:{
         righttitle:"",
-        isMembers:true
+        isMembers:true,
+        searchres:true
       }
      
     };
   },
   mounted(){
+    //获取组织架构数据
     AJuDeps().then(res=>{
       this.setdata=res.data.data;
       this.departlist=this.setdata.FirstList;  //获取当前部门菜单
       let showchildlistid=this.setdata.FirstList[this.copycurrent].id;  //获取当前选中部门的id
       this.childlist.righttitle=this.setdata.FirstList[this.copycurrent].depname    //设置显示菜单的父级部门
       this.$refs['rightshowpage'].rightmenulist=this.setdata.TwoList[showchildlistid]; //获取当前部门id对应的子部门
-      console.log(res,'这是响应的结果')
     })
   },
   methods: {
@@ -133,7 +134,7 @@ export default {
       }else if(commond=="edit"){
         this.Departmenttitle="编辑部门";
         let selectdept=this.departlist[this.copycurrent];
-        this.AddDepart.name=selectdept.title;
+        this.AddDepart.name=selectdept.depname;
         this.AddDepart.roleval="超级管理员";
         this.AddDepartment = true;
       }else if(commond=="del"){
@@ -161,13 +162,14 @@ export default {
         if(valid){
           if(_this.Departmenttitle=="创建部门"){
             var addrole={};
-            addrole.title=_this.AddDepart.name;
-            addrole.value=_this.AddDepartment.roleval;
+            addrole.depname=_this.AddDepart.name;
+            addrole.id=_this.AddDepartment.value;
             _this.departlist.push(addrole);
           }else if(_this.Departmenttitle=="编辑部门"){
+            debugger
             let selectdept=_this.departlist[_this.copycurrent];
-            selectdept.title=_this.AddDepart.name;
-            selectdept.value=_this.AddDepart.roleval;
+            selectdept.depname=_this.AddDepart.name;
+            selectdept.id=_this.AddDepart.value;
           }
           
           _this.AddDepartment = false;
@@ -181,14 +183,15 @@ export default {
     },
     //搜索成员
     doSearch(){
-      this.isMembers=false;
-      debugger
-      this.$refs['rightshowpage'].showselecttitle="相关成员（1）"
+      this.childlist.isMembers=false;
+      this.$refs['rightshowpage'].showselecttitle="相关成员（1）";
+      this.childlist.searchres=false;
     },
     //去除搜索
     clearSearch(){
-      this.isMembers=true;
-      this.$refs['rightshowpage'].showselecttitle="全部"
+      this.childlist.isMembers=true;
+      this.$refs['rightshowpage'].showselecttitle="全部";
+      this.childlist.searchres=true;
     }
   }
 };

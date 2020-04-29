@@ -46,7 +46,7 @@ a:hover {
   text-decoration: none;
 }
 
-div:focus {
+div:focus,input,button{
   outline: none;
 }
 p{
@@ -74,6 +74,9 @@ p{
 }
 
 // main-container global css
+#app{
+  background: #EAEEF7;
+}
 .app-container {
   padding: 20px;
 }

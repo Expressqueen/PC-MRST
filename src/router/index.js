@@ -25,7 +25,12 @@ const router=new Router({
       component: () => import('@/views/404'),
       hidden: true
     },
-  
+    //乐播平台注册
+    {
+      path: '/register',
+      component: () => import('@/views/Register/register'),
+      hidden:true
+    },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
   ]

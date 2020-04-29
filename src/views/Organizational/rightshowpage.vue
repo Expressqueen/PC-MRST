@@ -49,7 +49,7 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
-      <div class="restable">
+      <div class="restable" v-if="rightchild.searchres">
         <el-table :data="restableData" style="width: 100%" :show-header="false" @row-click="showdetailinfo">
           <el-table-column prop="date" label="姓名" width="120">
             <template slot-scope="scope">
@@ -79,6 +79,10 @@
           </el-table-column>
         </el-table>
       </div>
+      <div class="resnull" v-else>
+        <i class="el-icon-user-solid"></i>
+        <p>暂无成员</p>
+      </div>
     </div>
     <el-dialog :title="setDioTitle" :visible.sync="AddOrganization" width="800px" :close-on-click-modal="false">
       <el-form :model="AddOrgan" style="width:300px;margin:0 auto;">
@@ -100,7 +104,7 @@
         <InviteMembers></InviteMembers>
     </el-dialog>
     <el-dialog title="" :visible.sync="detailedinfo"
-    width="30%" :close-on-click-modal="false">
+    width="800px" :close-on-click-modal="false">
       <DetailInfo></DetailInfo>
   </el-dialog>
   </div>
