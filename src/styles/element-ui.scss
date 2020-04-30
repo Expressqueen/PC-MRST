@@ -72,3 +72,12 @@
 .del,.red{
   color:#F56C6C;
 }
+.el-select{
+  width: 100%;
+}
+//针对ie下element-table显示问题修改
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .el-table__body{
+    width:100%!important;
+  }
+}

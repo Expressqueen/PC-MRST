@@ -11,7 +11,7 @@ import VueClipboard from 'vue-clipboard2'
 import App from './App'
 import store from './store'
 import router from './router'
-
+import 'babel-polyfill'
 import '@/icons' // icon
 
 

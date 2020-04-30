@@ -25,11 +25,28 @@ const router=new Router({
       component: () => import('@/views/404'),
       hidden: true
     },
+    // {
+    //   path: '/register',
+    //   component: () => import('@/views/Register/register'),
+    //   hidden: true
+    // },
     //乐播平台注册
     {
       path: '/register',
       component: () => import('@/views/Register/register'),
       hidden:true
+    },
+    //权限组
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/PermissionGroup',
+      children: [{
+        path: 'PermissionGroup',
+        name: 'PermissionGroup',
+        component: () => import('@/views/PermissionGroup/index'),
+        meta: { title: '权限组'}
+      }]
     },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
