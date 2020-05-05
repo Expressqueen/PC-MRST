@@ -68,7 +68,7 @@
 </template>
 <script>
 import RightShowpage from './rightshowpage'
-import {AJuDeps,apiAddress} from '@/api/index'
+import {AJuDeps,apiAddress,SAJuDeps} from '@/api/index'
 export default {
   name: "organizational",
   components:{RightShowpage},
@@ -117,6 +117,17 @@ export default {
     })
   },
   methods: {
+    //搜索查看组织部门
+    SeachViewDep(id,name){
+      debugger
+      let params={
+        dep_id:id,
+        nickname:name
+      }
+      SAJuDeps(params).then(res=>{
+        debugger
+      })
+    },
     //菜单切换更改右侧部门菜单和数据
     selectedbar(obj, index) {
       this.copycurrent = index;
@@ -183,6 +194,8 @@ export default {
     },
     //搜索成员
     doSearch(){
+      debugger
+      this.SeachViewDep(0,this.search);
       this.childlist.isMembers=false;
       this.$refs['rightshowpage'].showselecttitle="相关成员（1）";
       this.childlist.searchres=false;

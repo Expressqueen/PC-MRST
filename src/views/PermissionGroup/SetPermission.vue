@@ -1,6 +1,6 @@
 <template>
   <div class="setpermission">
-    <el-dialog title="权限设置" :visible.sync="isvibleSet" width="960px" class="setpresion">
+    <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion" @close="CreateSetpres()"> 
       <el-form label-position="top" label-width="80px" :model="getpersionform" ref="getpersionform">
         <el-row :gutter="10">
           <el-col :span="8">
@@ -23,21 +23,6 @@
         <span class="alertinfo">*删除该权限组后，拥有该权限组的项目成员将自动更改为「默认权限组」。</span>
       </p>
       <div class="permisgroup">
-        <!-- <el-collapse>
-          <el-collapse-item name="1">
-            <template slot="title">
-              <el-checkbox
-                :indeterminate="isIndeterminate"
-                v-model="checkAll"
-                @change="handleCheckAllChange"
-              >组织架构</el-checkbox>
-            </template>
-            <el-checkbox-group v-model="checkedCities" @change="handleCheckedCitiesChange">
-              <el-checkbox v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox>
-            </el-checkbox-group>
-          </el-collapse-item>
-          
-        </el-collapse>-->
         <el-collapse>
           <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
             <template slot="title">
@@ -73,6 +58,7 @@ export default {
         name: "",
         identity: ""
       },
+      Setpresion:false,
     //   checkAll: false,
     //   checkedCities: ["上海", "北京"],
     //   cities: ["上海", "北京", "广州", "深圳"],
@@ -129,6 +115,9 @@ export default {
             message: "已取消删除"
           });
         });
+    },
+    CreateSetpres(){
+      this.Setpresion=false;
     }
   }
 };

@@ -50,21 +50,22 @@
         </el-dropdown>
       </div>
       <div class="restable" v-if="rightchild.searchres">
-        <el-table :data="restableData" style="width: 100%" :show-header="false" @row-click="showdetailinfo">
-          <el-table-column prop="date" label="姓名" width="120">
+        <el-table :data="restableData" style="width: 100%" :show-header="false" @row-dblclick="showdetailinfo">
+          <el-table-column prop="nickname" label="姓名" width="120">
             <template slot-scope="scope">
-               <el-avatar size="medium" :src="circleUrl" class="left"></el-avatar>
-               <span class="left avafont">{{scope.row.date}}</span>
+               <el-avatar size="medium" :src="scope.row.img" class="left"></el-avatar>
+               <span class="left avafont">{{scope.row.nickname}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="name" label="部门" width="180"></el-table-column>
-          <el-table-column prop="role" label="角色"></el-table-column>
-          <el-table-column prop="operation" label="操作" align="right" width="100">
+          <el-table-column prop="depname" label="部门" width="180"></el-table-column>
+          <el-table-column prop="position" label="角色"></el-table-column>
+          <el-table-column prop="ident" label="操作" align="right" width="100">
             <template slot-scope="scope">
+                <!-- {{scope.row.ident}} -->
                 <el-dropdown @command="Setrole">
                     <span class="el-dropdown-link">
-                        <span :class="{red:scope.row.operation=='待审核'}">
-                            {{scope.row.operation}}
+                        <span :class="{red:scope.row.ident=='待审核'}">
+                            {{scope.row.ident}}
                         </span>
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
@@ -104,15 +105,16 @@
         <InviteMembers></InviteMembers>
     </el-dialog>
     <el-dialog title="" :visible.sync="detailedinfo"
-    width="800px" :close-on-click-modal="false">
-      <DetailInfo></DetailInfo>
-  </el-dialog>
+    width="800px" :close-on-click-modal="false" ref="DetailInfo" >
+      <DetailInfo :propdetail="propdetailinfo"></DetailInfo>
+    </el-dialog>
   </div>
 </template>
 <script>
 import InviteMembers from '@/views/Organizational/Invitemembers'
 import DetailInfo from '@/views/Organizational/detailinfo'
 import {hasClass} from '@/utils/index'
+import {SAJuDeps} from '@/api/index'
 export default {
   name: "rightshowpage",
   props:{
@@ -137,31 +139,9 @@ export default {
       setDioTitle:"创建部门",
       rightmenulist: [],
       restableData: [
-        {
-          date: "明明",
-          name: "王小虎1",
-          role: "上海市普陀区金沙江路 1518 弄",
-          operation:"待审核"
-        },
-        {
-          date: "张三",
-          name: "王小虎2",
-          role: "上海市普陀区金沙江路 1517 弄",
-          operation:"管理员"
-        },
-        {
-          date: "李四",
-          name: "王小虎3",
-          role: "上海市普陀区金沙江路 1519 弄",
-          operation:"管理员"
-        },
-        {
-          date: "王五",
-          name: "王小虎4",
-          role: "上海市普陀区金沙江路 1516 弄",
-          operation:"成员"
-        }
+        
       ],
+      propdetailinfo:"",
       circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       selectdepartlist: "",
       AddOrganization: false,
@@ -173,6 +153,12 @@ export default {
       invitemembers:false
     };
   },
+  mounted(){
+    SAJuDeps().then(res=>{
+      this.restableData=res.data.data;
+    })
+  },
+
   methods: {
     //设置全部展开折叠功能
     openchildlist(obj,item,index){
@@ -187,7 +173,7 @@ export default {
       this.showselecttitle=item.depname;
       this.Cselectindex=null;
     },
-    //设置三级自己选中事件，组织冒泡
+    //设置三级自己选中事件
     Cselectlist(obj,item,index){
       this.showselecttitle=item.depname;
       this.Cselectindex=index;
@@ -237,9 +223,10 @@ export default {
             break;
       }
     },
-    //table行单机事件
+    //table行双击事件
     showdetailinfo(row,column,event){
       this.detailedinfo=true;
+      this.propdetailinfo=row;
     }
   }
 };

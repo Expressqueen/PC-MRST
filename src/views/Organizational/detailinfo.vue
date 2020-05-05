@@ -3,16 +3,16 @@
         <!-- 这是我的详细信息页面 -->
         <div class="dinfotitle">
             <div class="avar left">
-                <el-avatar :size="62" :src="detailinfo.averurl"></el-avatar>
+                <el-avatar :size="62" :src="propdetail.img"></el-avatar>
             </div>
             <div class="infomation left">
-                <p class="weight">{{detailinfo.name}}</p>
-                <p class="noweight">{{detailinfo.position}}</p>
+                <p class="weight">{{propdetail.nickname}}</p>
+                <p class="noweight">{{propdetail.position}}</p>
                 
             </div>
             <div class="infomation right">
-                <p class="noweight"><i class="el-icon-phone"></i>{{detailinfo.tellpone}}</p>
-                <p class="noweight"><i class="el-icon-s-promotion"></i>{{detailinfo.email}}</p>
+                <p class="noweight"><i class="el-icon-phone"></i>{{propdetail.phone}}</p>
+                <p class="noweight"><i class="el-icon-s-promotion"></i>{{propdetail.email}}</p>
             </div>
         </div>
         <hr class="clhr">
@@ -21,23 +21,23 @@
             <div class="flex">
                 <div class="avgflex">
                     <span class="noweight">姓名</span>
-                    <span class="weight">{{detailinfo.name}}</span>
+                    <span class="weight">{{propdetail.nickname}}</span>
                 </div>
                 <div class="avgflex">
                     <span class="noweight">手机</span>
-                    <span class="weight">{{detailinfo.tellpone}}</span>
+                    <span class="weight">{{propdetail.phone}}</span>
                 </div>
                 <div class="avgflex textright">
                     <span class="noweight">邮箱</span>
-                    <span class="weight">{{detailinfo.email}}</span>
+                    <span class="weight">{{propdetail.email}}</span>
                 </div>
                 <div class="avgflex">
                     <span class="noweight">部门</span>
-                    <span class="weight">{{detailinfo.department}}</span>
+                    <span class="weight">{{propdetail.depname}}</span>
                 </div>
                 <div class="avgflex">
                     <span class="noweight">职位</span>
-                    <span class="weight">{{detailinfo.position}}</span>
+                    <span class="weight">{{propdetail.position}}</span>
                 </div>
             </div>
         </div>
@@ -45,6 +45,11 @@
 </template>
 <script>
 export default {
+    props:{
+        propdetail:{
+            type:Object
+        }
+    },
     data(){
         return{
             detailinfo:{
