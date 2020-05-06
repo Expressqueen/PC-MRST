@@ -97,11 +97,8 @@ export default {
   },
   methods: {
     handleCheckAllChange(val,index) {
-        debugger
       this.SetPermissionlist[index].checkedroles=val?this.SetPermissionlist[index].roles:[];
       this.SetPermissionlist[index].isIndeterminate=false;
-    //   this.checkedCities = val ? this.cities : [];
-    //   this.isIndeterminate = false;
     },
     handleCheckedCitiesChange(value) {
       let checkedCount = value.length;
