@@ -24,13 +24,13 @@
               <template slot="append">获取验证码</template>
             </el-input>
           </el-form-item>
-          <el-form-item label="选择部门" prop="department">
-            <el-select v-model="Regisform.department" placeholder="请选择">
+          <el-form-item label="选择部门" prop="deptname">
+            <el-select v-model="Regisform.deptname" placeholder="请选择部门">
               <el-option
-                v-for="item in Regisform.departmentoption"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="item in Regisform.departlist.child"
+                :key="item.id"
+                :label="item.depname"
+                :value="item.id"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -54,7 +54,7 @@
 </template>
 <script>
 import { validpass,validTellpone} from "@/utils/validate";
-import {getARegi} from '@/api/index'
+import {getARegi,ARegi} from '@/api/index'
 export default {
   name: "Register",
   data() {
@@ -69,44 +69,33 @@ export default {
     };
     return {
       inviter: "唐璐",
+      nick_id:"",
       avturl:
         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       Regisform: {
         name: "",
         tellpone: "",
         Vertcode: "",
-        department: "",
         position: "",
         setpassword: "",
         confpassword: "",
-        departmentoption: [
-          {
-            value: "选项1",
-            label: "黄金糕"
-          },
-          {
-            value: "选项2",
-            label: "双皮奶"
-          },
-          {
-            value: "选项3",
-            label: "蚵仔煎"
-          },
-          {
-            value: "选项4",
-            label: "龙须面"
-          },
-          {
-            value: "选项5",
-            label: "北京烤鸭"
-          }
-        ]
+        deptname:"",
+        // deptnameid:"",
+        departlist:{
+          // depname:"研发部",
+          // id:16,
+          // child:[
+          //   {id: 17, depname: "后端", child: Array(0)},
+          //   {id: 18, depname: "前端", child: Array(0)},
+          //   {id: 19, depname: "UI", child: Array(0)},
+          // ]
+        },
       },
       RegisRule: {
         name:[{required:true,message:"请输入真实姓名",trigger:'blur'}],
         tellpone:[{validator:validTellpone,trigger:'blur'}],
         Vertcode:[{required:true,message:"请输入验证码",trigger:'blur'}],
-        department:[{required:true,message:"请选择部门",trigger:'change'}],
+        deptname:[{required:true,message:'请选择部门',trigger:'change'}],
         position:[{required:true,message:"请填写职位",trigger:'blur'}],
         setpassword: [{ validator: validpass, trigger: "blur" }],
         confpassword: [{ validator: Aginvalidpass, trigger: "blur" }]
@@ -115,10 +104,16 @@ export default {
   },
   mounted(){
     let params={
-      Invi:"eyJpdiI6IlZVN1Z3RW02ZW1Mck0rY3JRRmkwTnc9PSIsInZhbHVlIjoiaGxndm1ERGhWR29VTUI5MEhqMHd4U3dVNXIza3hQZklEWGxDbUZVZkwwWGVub1dRXC8wUlRsUkxyVlwvcEpyVjM0Z2VseFh4dmcybHg1ZzkrUnhFNWNqanBLc2xKZzJqdXpnbzZcL3dYNEhDOEtOM3N4U2lKY25cLzJlWEtmbWY1M20yWEQyZjQ0cm5CVnZZTzBzVjdmYXJKQmtJVkdVMzRsT2o4aTNnU0ViWFwvM0E5UW9VZnBnZGY1WUo3d3lBd21PZkc4ejFTSHp5ZllESXR2RUZ0SjBUR0V1RWxEdENGdUk0eWdsUVVsR29GaXVNblFGRzV6bUNTQnFNWndjTDZ6bVlBIiwibWFjIjoiZWVjM2M4ZDlhYmQyMzY2M2FlMTIwNTlkMjczMTBiYjBlZGIzMjU1NzhjMzRkY2RhNTA4ZWRlYWViYjIzYzBjMiJ9"
+      Invi:this.$route.query.Invi
     }
     getARegi(params).then(res=>{
-      if(res.data.code==53){
+      if(res.data.code==0){
+        var revicedata=res.data.data;
+        this.inviter=revicedata.nickname;
+        this.avturl=revicedata.img;
+        this.nick_id=revicedata.nick_id;
+        this.Regisform.departlist=revicedata.dep_list
+      }else{
         this.$message({
           type:'warning',
           message:res.data.msg
@@ -127,10 +122,31 @@ export default {
     })
   },
   methods: {
+    //提交注册
     SubApply() {
       this.$refs["Regisform"].validate(valid => {
         if (valid) {
-          alert("submit!");
+          let parmars={
+            nickname:this.Regisform.name,
+            phone:this.Regisform.tellpone,
+            position:this.Regisform.position,
+            nick_id:this.nick_id,
+            password:this.Regisform.setpassword,
+            dep_id:this.Regisform.deptname
+          }
+          ARegi(parmars).then(res=>{
+            if(res.data.code==0){
+              this.$message({
+                type:'success',
+                msg:"注册成功"
+              })
+            }else{
+              this.$message({
+                type:'error',
+                msg:res.data.msg
+              })
+            }
+          })
         } else {
           console.log("error submit!!");
           return false;

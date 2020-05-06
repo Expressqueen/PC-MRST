@@ -3,27 +3,22 @@
     <div class="rightmenu left" v-show="rightchild.isMembers">
       <p class="menutitle">{{rightchild.righttitle}}</p>
       <ul class="departlist clearfix">
-        <li
-          v-for="(item,index) in rightmenulist"
-          :key="index"
-          @click="openchildlist($event,item,index)"
-          :class="[{selectedli:index==menucurrent},index!=0?ishide:'show',{isCshow:item.child.length>0}]"
-        >
+        <li v-for="(item,index) in rightmenulist" :key="index" @click="checkchild($event,item,index)"
+        :class="[{selectedli:index==menucurrent}]" v-show="!item.isshowChild||item.pid==0"> 
           <p class="Fshowtitle">
-             <span class="showrightitle">{{item.depname}}</span>
+            <span class="showrightitle">{{item.depname}}</span>
             （{{item.udep_count}}）
-
             <i
-              :class="[ishide=='show'?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+              :class="[item.showchild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
               v-if="item.pid==0"
             ></i>
             <i
-              :class="[isCshowpage?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+              :class="[!item.showchild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
              v-else-if="item.child.length>0"
             ></i>
-            <ul class="childmunulist" v-show="item.child.length>0&&isCshowpage">
-              <li v-for="(Citem,Cindex) in item.child" :key="Cindex" @click.stop="Cselectlist($event,Citem,Cindex)"
-                :class="{iscselect:Cindex==Cselectindex}">
+            <ul class="childmunulist" v-show="item.showchild">
+              <li v-for="(Citem,Cindex) in item.child" :key="Cindex"
+                :class="{selectedli:Cindex==Cselectindex}" @click.stop="Cselectlist($event,Citem,Cindex)">
                 <p class="Cshowtitle">
                     <span class="showrightitle">{{Citem.depname}}</span>
                   （{{Citem.udep_count}}）
@@ -102,7 +97,7 @@
       </div>
     </el-dialog>
     <el-dialog title="邀请成员" :visible.sync="invitemembers" width="800px" height="300px" :close-on-click-modal="false">
-        <InviteMembers></InviteMembers>
+        <InviteMembers ref="InviteMember"></InviteMembers>
     </el-dialog>
     <el-dialog title="" :visible.sync="detailedinfo"
     width="800px" :close-on-click-modal="false" ref="DetailInfo" >
@@ -114,7 +109,7 @@
 import InviteMembers from '@/views/Organizational/Invitemembers'
 import DetailInfo from '@/views/Organizational/detailinfo'
 import {hasClass} from '@/utils/index'
-import {SAJuDeps} from '@/api/index'
+import {SAJuDeps,AUsRegs} from '@/api/index'
 export default {
   name: "rightshowpage",
   props:{
@@ -131,6 +126,7 @@ export default {
   data() {
     return {
       ishide:'show',
+      // checkmunu:0,
       menucurrent: 0,
       isCshowpage:false,
       Cselectindex: null,
@@ -154,29 +150,34 @@ export default {
     };
   },
   mounted(){
-    SAJuDeps().then(res=>{
-      this.restableData=res.data.data;
-    })
+    // this.getSAJuDeps();
   },
 
   methods: {
     //设置全部展开折叠功能
-    openchildlist(obj,item,index){
-      if(item.pid==0&&this.menucurrent==index)
-      this.ishide=="hide"?this.ishide='show':this.ishide='hide';
-      if(hasClass(obj.currentTarget,'isCshow')){
-        this.isCshowpage=!this.isCshowpage;
-      }else{
-        this.isCshowpage=false;
+    checkchild(obj,item,index){
+      if(item.pid==0&&this.menucurrent==index){
+        item.showchild=!item.showchild;
+        this.rightmenulist.forEach(res=>{
+          if(res.pid==item.id){
+            res.isshowChild=!res.isshowChild;
+          }
+        })
+      }else if(item.child.length>0){
+        item.showchild=!item.showchild;
       }
-      this.menucurrent = index;
-      this.showselecttitle=item.depname;
+      this.$forceUpdate();
+      this.menucurrent=index;
       this.Cselectindex=null;
+      this.showselecttitle=item.depname;
+      this.$parent.SeachViewDep(item.id);
     },
     //设置三级自己选中事件
     Cselectlist(obj,item,index){
       this.showselecttitle=item.depname;
       this.Cselectindex=index;
+      this.menucurrent=null;
+      this.$parent.SeachViewDep(item.id);
     },
     deleteline(index, data) {
       this.restableData.splice(index, 1);
@@ -193,6 +194,17 @@ export default {
             case 'Del':
                 break;
             case 'Inmembers':
+                let selectdepid=this.rightmenulist[this.menucurrent].id;
+                AUsRegs({dep_id:selectdepid}).then(res=>{
+                  if(res.data.code==0){
+                    this.$refs['InviteMember'].CopyUrl=res.data.data;
+                  }else{
+                    this.$message({
+                      type:'error',
+                      message:res.data.msg
+                    })
+                  }
+                })
                 this.invitemembers=true;
                 break;
         }

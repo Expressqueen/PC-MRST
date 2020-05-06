@@ -55,7 +55,14 @@
         .rightmenu{
             width: 200px;
             height: 100%;
+            overflow-y: scroll;
             padding: 40px 12px 0 12px;
+            scrollbar-width: none; // firefox下滚动条不显示
+            -ms-overflow-style:none; // IE下滚动条不显示
+            //设置侧边栏滚动条不显示 chrome
+            &::-webkit-scrollbar {
+                display: none;
+            }
             .menutitle{
                 font-size: 16px;
                 color: #3A454B;
@@ -66,7 +73,7 @@
             .childmunulist{
                 margin: 12px -12px -12px;
                 background: #fff;
-                //padding-left: 12px;
+                padding-left: 12px;
                 li{
                     padding:12px;
                     font-weight: normal;
@@ -86,6 +93,12 @@
             border-left: 1px solid #eeeeee;
             padding:40px 20px 0 20px;
             position: relative;
+            scrollbar-width: none; // firefox下滚动条不显示
+            -ms-overflow-style:none; // IE下滚动条不显示
+            //设置侧边栏滚动条不显示 chrome
+            &::-webkit-scrollbar {
+                display: none;
+            }
             .rightrestitle{
                 border-bottom: 1px solid #F4F5F7;
                 overflow: hidden;

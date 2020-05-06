@@ -5,21 +5,28 @@
         <el-row :gutter="10">
           <el-col :span="8">
             <el-form-item label="权限组名称" prop="name">
-              <el-input v-model="getpersionform.name"></el-input>
+              <el-input v-model="getpersionform.name" disabled></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="权限组身份" prop="identity">
-              <el-input v-model="getpersionform.identity"></el-input>
+              <el-input v-model="getpersionform.identity" disabled></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-button type="primary" @click="CreateSetpres()" class="save">保存</el-button>
+            <el-form-item label="是否为部门负责人" prop="isDepart">
+              <el-select v-model="getpersionform.isDepart">
+                <option value="是" label="是"></option>
+                <option value="否" label="否"></option>
+              </el-select>
+            </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <p class="delgroup">
-        <button type="button" class="danger" @click="delPression()">删除权限组</button>
+        <el-button type="primary" @click="CreateSetpres()" class="save">保存</el-button>
+        <el-button type="danger" plain @click="delPression()">删除权限组</el-button>
+        <!-- <button type="button" class="danger" @click="delPression()">删除权限组</button> -->
         <span class="alertinfo">*删除该权限组后，拥有该权限组的项目成员将自动更改为「默认权限组」。</span>
       </p>
       <div class="permisgroup">
@@ -56,7 +63,8 @@ export default {
     return {
       getpersionform: {
         name: "",
-        identity: ""
+        identity: "",
+        isDepart:""
       },
       Setpresion:false,
     //   checkAll: false,
@@ -129,9 +137,9 @@ export default {
   .el-dialog__footer {
     padding: 10px 30px 0;
   }
-  .save {
-    margin-top: 32px;
-  }
+  // .save {
+  //   // margin-top: 32px;
+  // }
   .delgroup {
     margin: 10px 0;
     .alertinfo {

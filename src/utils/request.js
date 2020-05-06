@@ -44,11 +44,19 @@ service.interceptors.response.use(
   response => {   
       // 如果返回的状态码为200，说明接口请求成功，可以正常拿到数据     
       // 否则的话抛出错误
-      if (response.status === 200) {            
+      if (response.status === 200) {  
+          if (response.method === 'post') {
+              Object.keys(response.data).forEach(item => {
+                  !isPrimeval(response.data[item]) && (response.data[item] = JSON.stringify(response.data[item]))
+              })
+              response.data = qs.stringify(response.data)
+          }          
           return Promise.resolve(response);        
       } else {            
           return Promise.reject(response);        
-      }    
+      }   
+      // 对 post 请求数据进行处理
+    
   },    
   // 服务器状态码不是2开头的的情况
   error => {      
@@ -125,12 +133,12 @@ export const get = (url, params, config = {}) => {
 }
 
 /* post请求  */
-export const post = (url, data, config = {}) => {
+export const post = (url, params, config = {}) => {
   return new Promise((resolve, reject) => {
     service({
       method: 'post',
       url,
-      data,
+      params,
       ...config
     }).then(response => {
       resolve(response)

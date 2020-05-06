@@ -6,18 +6,21 @@
           <i class="el-icon-key"></i>
           权限组
         </span>
-        <div class="setname right el-dropdown"></div>
+        <div class="setname right el-dropdown">
+          <a href="javascript:void(0)" @click="Createper()" class="temscope">
+                <i class="el-icon-s-tools"></i>
+                创建权限组
+          </a>
+        </div>
       </div>
       <div class="persstable">
         <el-table :data="tableData" stripe style="width: 100%">
-          <el-table-column prop="name" label="名称"></el-table-column>
-          <el-table-column prop="describe" label="描述"></el-table-column>
-          <el-table-column prop="address" label="操作" width="260">
+          <el-table-column prop="id" v-if="show"></el-table-column>
+          <el-table-column prop="rolename" label="名称"></el-table-column>
+          <el-table-column prop="iden" label="身份"></el-table-column>
+          <el-table-column prop="pid" label="pid" v-if="show"></el-table-column>
+          <el-table-column prop="" label="操作" width="150">
             <template slot-scope="scope">
-              <a href="javascript:void(0)" @click="Createper(scope.row)" class="temscope">
-                <i class="el-icon-s-tools"></i>
-                创建
-              </a>
               <a href="javascript:void(0)" @click="Setper(scope.row)" class="temscope">
                 <i class="el-icon-s-tools"></i>
                 设置
@@ -61,55 +64,51 @@
     </el-dialog>
     <!-- 权限设置 -->
     <SetPermission ref='Setpermisson'></SetPermission>
-    <!-- <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion">
-      
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="CreateSetpres()">创建并配置</el-button>
-      </span>
-    </el-dialog> -->
   </div>
 </template>
 <script>
 import SetPermission from "@/views/PermissionGroup/SetPermission";
+import {ARoLi} from '@/api/index'
 export default {
   name: "PermissionGroup",
   components: { SetPermission },
   data() {
     return {
-      tableData: [
-        {
-          name: "乐播新瑞(北京)文化传媒有限公司",
-          describe: "超级管理员"
-        },
-        {
-          name: "研发部",
-          describe: "王小虎"
-        },
-        {
-          name: "后台",
-          describe: "王小虎"
-        },
-        {
-          name: "后端成员",
-          describe: "王小虎"
-        }
-      ],
+      tableData: [],
       Createpresion: false,
       persionform: {
         name: "",
         identity: "",
         DepartHead:""
       },
-      Setpresion: true
+      Setpresion: true,
+      show:false
     };
   },
+  mounted(){
+    this.getRolelist();
+  },
   methods: {
+    //获取权限组列表
+    getRolelist(){
+      ARoLi().then(res=>{
+        if(res.data.code==0){
+          this.tableData=res.data.data;
+        }else{
+          this.$message({
+            type:"error",
+            message:res.data.msg
+          })
+        }
+      })
+    },
+    //创建权限组
     CreateSetpres() {
       this.$refs["persionform"].validate(valid => {
         if (valid) {
           var newpresion = {};
-          newpresion.name = this.persionform.name;
-          newpresion.describe = this.persionform.identity;
+          newpresion.rolename = this.persionform.name;
+          newpresion.iden = this.persionform.identity;
           this.tableData.push(newpresion);
           this.Createpresion = false;
           this.$message({
@@ -121,13 +120,16 @@ export default {
         }
       });
     },
-    Createper(row){
+    //创建权限组
+    Createper(){
         this.Createpresion=true;
     },
+    //设置权限组
     Setper(row) {
+      debugger
       this.$refs['Setpermisson'].Setpresion = true;
-      this.$refs['Setpermisson'].getpersionform.name=row.name;
-      this.$refs['Setpermisson'].getpersionform.identity=row.describe;
+      this.$refs['Setpermisson'].getpersionform.name=row.rolename;
+      this.$refs['Setpermisson'].getpersionform.identity=row.iden;
     },
     //关闭权限设置页面
     CloseSetpresion(setvalue) {
@@ -142,12 +144,16 @@ export default {
   margin: 0 auto;
   padding: 40px 0;
   height: calc(100vh - 56px);
+  .temscope{
+    color: #096DD9;
+  }
   .pergroup {
     height: 100%;
     padding: 20px;
     background: rgba(255, 255, 255, 1);
     box-shadow: 0px 0px 12px 0px rgba(9, 109, 217, 0.1);
     border-radius: 4px;
+    overflow-y: scroll;
     .psghead {
       border-bottom: 1px solid #f4f5f7;
       padding: 10px;
