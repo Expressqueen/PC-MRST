@@ -60,7 +60,7 @@
       </span>
     </el-dialog>
     <!-- 权限设置 -->
-    <SetPermission @CloseSet="CloseSetpresion" ref='Setpermisson' :isvibleSet="Setpresion"></SetPermission>
+    <SetPermission ref='Setpermisson'></SetPermission>
     <!-- <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion">
       
       <span slot="footer" class="dialog-footer">
@@ -125,13 +125,13 @@ export default {
         this.Createpresion=true;
     },
     Setper(row) {
-      this.Setpresion = true;
+      this.$refs['Setpermisson'].Setpresion = true;
       this.$refs['Setpermisson'].getpersionform.name=row.name;
       this.$refs['Setpermisson'].getpersionform.identity=row.describe;
     },
     //关闭权限设置页面
-    CloseSetpresion() {
-      this.Setpresion = false;
+    CloseSetpresion(setvalue) {
+      this.Setpresion = setvalue;
     }
   }
 };

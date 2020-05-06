@@ -54,6 +54,7 @@
 </template>
 <script>
 import { validpass,validTellpone} from "@/utils/validate";
+import {getARegi} from '@/api/index'
 export default {
   name: "Register",
   data() {
@@ -112,8 +113,20 @@ export default {
       }
     };
   },
+  mounted(){
+    let params={
+      Invi:"eyJpdiI6IlZVN1Z3RW02ZW1Mck0rY3JRRmkwTnc9PSIsInZhbHVlIjoiaGxndm1ERGhWR29VTUI5MEhqMHd4U3dVNXIza3hQZklEWGxDbUZVZkwwWGVub1dRXC8wUlRsUkxyVlwvcEpyVjM0Z2VseFh4dmcybHg1ZzkrUnhFNWNqanBLc2xKZzJqdXpnbzZcL3dYNEhDOEtOM3N4U2lKY25cLzJlWEtmbWY1M20yWEQyZjQ0cm5CVnZZTzBzVjdmYXJKQmtJVkdVMzRsT2o4aTNnU0ViWFwvM0E5UW9VZnBnZGY1WUo3d3lBd21PZkc4ejFTSHp5ZllESXR2RUZ0SjBUR0V1RWxEdENGdUk0eWdsUVVsR29GaXVNblFGRzV6bUNTQnFNWndjTDZ6bVlBIiwibWFjIjoiZWVjM2M4ZDlhYmQyMzY2M2FlMTIwNTlkMjczMTBiYjBlZGIzMjU1NzhjMzRkY2RhNTA4ZWRlYWViYjIzYzBjMiJ9"
+    }
+    getARegi(params).then(res=>{
+      if(res.data.code==53){
+        this.$message({
+          type:'warning',
+          message:res.data.msg
+        })
+      }
+    })
+  },
   methods: {
-    
     SubApply() {
       this.$refs["Regisform"].validate(valid => {
         if (valid) {
