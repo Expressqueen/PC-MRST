@@ -6,12 +6,6 @@
           <i class="el-icon-key"></i>
           权限组
         </span>
-        <div class="setname right el-dropdown">
-          <a href="javascript:void(0)" @click="Createper()" class="temscope">
-                <i class="el-icon-s-tools"></i>
-                创建权限组
-          </a>
-        </div>
       </div>
       <div class="persstable">
         <el-table :data="tableData" stripe style="width: 100%">
@@ -19,8 +13,12 @@
           <el-table-column prop="rolename" label="名称"></el-table-column>
           <el-table-column prop="iden" label="身份"></el-table-column>
           <el-table-column prop="pid" label="pid" v-if="show"></el-table-column>
-          <el-table-column prop="" label="操作" width="150">
+          <el-table-column prop="" label="操作" width="220">
             <template slot-scope="scope">
+              <a href="javascript:void(0)" @click="Createper(scope.row)" class="temscope">
+                    <i class="el-icon-s-tools"></i>
+                    创建
+              </a>
               <a href="javascript:void(0)" @click="Setper(scope.row)" class="temscope">
                 <i class="el-icon-s-tools"></i>
                 设置
@@ -53,8 +51,8 @@
           :rules="{required:true,message:'请选择是否为部门负责人',trigger:'blur'}"
         >
           <el-select v-model="persionform.DepartHead" placeholder="请选择是否为部门负责人">
-            <el-option label="是" value="是"></el-option>
-            <el-option label="否" value="否"></el-option>
+            <el-option label="是" value="1"></el-option>
+            <el-option label="否" value="0"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -68,7 +66,7 @@
 </template>
 <script>
 import SetPermission from "@/views/PermissionGroup/SetPermission";
-import {ARoLi} from '@/api/index'
+import {ARoLi,ARoRuLi,PostARoRuLi} from '@/api/index'
 export default {
   name: "PermissionGroup",
   components: { SetPermission },
@@ -76,6 +74,7 @@ export default {
     return {
       tableData: [],
       Createpresion: false,
+      selectPid:0,
       persionform: {
         name: "",
         identity: "",
@@ -106,27 +105,40 @@ export default {
     CreateSetpres() {
       this.$refs["persionform"].validate(valid => {
         if (valid) {
-          var newpresion = {};
-          newpresion.rolename = this.persionform.name;
-          newpresion.iden = this.persionform.identity;
-          this.tableData.push(newpresion);
-          this.Createpresion = false;
-          this.$message({
-            message: "创建权限组成功",
-            type: "success"
-          });
+          debugger
+          // let params = {};
+          // params.rolename = this.persionform.name;
+          // params.ident = this.persionform.identity;
+          // params.is_admin=this.persionform.DepartHead;
+          // params.pid=this.selectPid;
+          
+          this.$refs["Setpermisson"].getpersionform.name=this.persionform.name;
+          this.$refs["Setpermisson"].getpersionform.identity=this.persionform.identity;
+          this.$refs["Setpermisson"].getpersionform.DepartHead=this.persionform.DepartHead;
+          this.$refs["Setpermisson"].getpersionform.selectPid=this.selectPid;
+          //获取权限
+          ARoRuLi({role_id:this.selectPid}).then(res=>{
+            this.$refs["Setpermisson"].Setpresion=true;
+            debugger
+          })
+          // this.tableData.push(newpresion);
+          // this.Createpresion = false;
+          // this.$message({
+          //   message: "创建权限组成功",
+          //   type: "success"
+          // });
         } else {
           return false;
         }
       });
     },
     //创建权限组
-    Createper(){
+    Createper(row){
         this.Createpresion=true;
+        this.selectPid=row.id;
     },
     //设置权限组
     Setper(row) {
-      debugger
       this.$refs['Setpermisson'].Setpresion = true;
       this.$refs['Setpermisson'].getpersionform.name=row.rolename;
       this.$refs['Setpermisson'].getpersionform.identity=row.iden;

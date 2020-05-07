@@ -9,16 +9,16 @@
             <span class="showrightitle">{{item.depname}}</span>
             （{{item.udep_count}}）
             <i
-              :class="[item.showchild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+              :class="[item.showchild?'el-icon-caret-bottom':'el-icon-caret-top','right']"
               v-if="item.pid==0"
             ></i>
             <i
-              :class="[!item.showchild?'el-icon-caret-top':'el-icon-caret-bottom','right']"
+              :class="[!item.showchild?'el-icon-caret-bottom':'el-icon-caret-top','right']"
              v-else-if="item.child.length>0"
             ></i>
             <ul class="childmunulist" v-show="item.showchild">
               <li v-for="(Citem,Cindex) in item.child" :key="Cindex"
-                :class="{selectedli:Cindex==Cselectindex}" @click.stop="Cselectlist($event,Citem,Cindex)">
+                :class="Cindex==Cselectindex&&parentindex==index?'selectedli':''" @click.stop="Cselectlist($event,Citem,Cindex,index)">
                 <p class="Cshowtitle">
                     <span class="showrightitle">{{Citem.depname}}</span>
                   （{{Citem.udep_count}}）
@@ -125,10 +125,8 @@ export default {
   },
   data() {
     return {
-      ishide:'show',
-      // checkmunu:0,
       menucurrent: 0,
-      isCshowpage:false,
+      parentindex:0,
       Cselectindex: null,
       detailedinfo:false,
       showselecttitle:"全部",
@@ -168,23 +166,30 @@ export default {
       }
       this.$forceUpdate();
       this.menucurrent=index;
+      this.parentindex=index;
       this.Cselectindex=null;
       this.showselecttitle=item.depname;
       this.$parent.SeachViewDep(item.id);
     },
     //设置三级自己选中事件
-    Cselectlist(obj,item,index){
+    Cselectlist(obj,item,index,pindex){
+      item.isshowChild=!item.isshowChild;
       this.showselecttitle=item.depname;
       this.Cselectindex=index;
+      this.parentindex=pindex;
       this.menucurrent=null;
+      this.$forceUpdate();
       this.$parent.SeachViewDep(item.id);
     },
     deleteline(index, data) {
       this.restableData.splice(index, 1);
     },
+    //对部门进行增删改操作
     Secondary(command) {
+        
         switch(command){
             case 'Add':
+                this.setDioTitle="创建部门";
                 this.AddOrganization=true;
                 break;
             case 'Edit':
@@ -194,7 +199,7 @@ export default {
             case 'Del':
                 break;
             case 'Inmembers':
-                let selectdepid=this.rightmenulist[this.menucurrent].id;
+                let selectdepid=this.getdepid();
                 AUsRegs({dep_id:selectdepid}).then(res=>{
                   if(res.data.code==0){
                     this.$refs['InviteMember'].CopyUrl=res.data.data;
@@ -212,12 +217,27 @@ export default {
     //增加修改确定方法
     setDiorgan(){
         if(this.setDioTitle="创建部门"){
+          // AJuDepC({}).then(res=>{
+
+          // })
             this.$message("创建部门成功")
         }else if(this.setDioTitle="编辑部门"){
              this.$message("编辑部门成功")
         }
 
     },
+    //获取当前选中右侧的部门父级id
+    getdepid(){
+      let selectdepid;
+      if(this.Cselectindex==null){
+        selectdepid=this.rightmenulist[this.parentindex].id
+      }else{
+        selectdepid=this.rightmenulist[this.parentindex].child[this.Cselectindex].pid;
+      }
+      return selectdepid;
+    },
+    //根据id获取角色列表
+
     //显示列表权限修改
     Setrole(command){
       switch(command.type){

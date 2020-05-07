@@ -5,19 +5,19 @@
         <el-row :gutter="10">
           <el-col :span="8">
             <el-form-item label="权限组名称" prop="name">
-              <el-input v-model="getpersionform.name" disabled></el-input>
+              <el-input v-model="getpersionform.name"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="权限组身份" prop="identity">
-              <el-input v-model="getpersionform.identity" disabled></el-input>
+              <el-input v-model="getpersionform.identity"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="是否为部门负责人" prop="isDepart">
-              <el-select v-model="getpersionform.isDepart">
-                <option value="是" label="是"></option>
-                <option value="否" label="否"></option>
+            <el-form-item label="是否为部门负责人" prop="DepartHead">
+              <el-select v-model="getpersionform.DepartHead">
+                <el-option label="是" value="1"></el-option>
+                <el-option label="否" value="0"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -29,7 +29,7 @@
         <!-- <button type="button" class="danger" @click="delPression()">删除权限组</button> -->
         <span class="alertinfo">*删除该权限组后，拥有该权限组的项目成员将自动更改为「默认权限组」。</span>
       </p>
-      <div class="permisgroup">
+      <!-- <div class="permisgroup">
         <el-collapse>
           <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
             <template slot="title">
@@ -44,14 +44,24 @@
               </el-checkbox-group>
           </el-collapse-item>
         </el-collapse>
+      </div> -->
+      <div class="permisgroup">
+        <el-collapse>
+          <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
+            <template slot="title">
+              <el-checkbox v-model="item.checkAll" :indeterminate="item.isIndeterminate" @change="checkAllper($event,index)">{{item.conname}}</el-checkbox>
+            </template>
+            <el-checkbox-group v-model="item.checkedroles">
+                <el-checkbox v-for="role in item.child" :label="role.id" :key="role.id" :value="role.id">{{role.conname}}</el-checkbox>
+            </el-checkbox-group>
+          </el-collapse-item>
+        </el-collapse>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="CreateSetpres()">创建并配置</el-button>
-      </span>
     </el-dialog>
   </div>
 </template>
 <script>
+import {ARoRuLi} from '@/api/index'
 export default {
   name: "setpermission",
   props: {
@@ -64,32 +74,120 @@ export default {
       getpersionform: {
         name: "",
         identity: "",
-        isDepart:""
+        DepartHead:""
       },
       Setpresion:false,
-    //   checkAll: false,
-    //   checkedCities: ["上海", "北京"],
-    //   cities: ["上海", "北京", "广州", "深圳"],
-    //   isIndeterminate: true,
+      selectPid:0,
       SetPermissionlist: [
+        // {
+        //   Persionname: "组织架构",
+        //   checkAll: false,
+        //   checkedroles: ["上海", "北京"],
+        //   roles: ["上海", "北京", "广州", "深圳"],
+        //   isIndeterminate: true
+        // },
+        // {
+        //   Persionname: "节目列表",
+        //   checkAll: false,
+        //   checkedroles: ["管理员"],
+        //   roles: ["管理员", "成员", "部门经理", "人事经理"],
+        //   isIndeterminate: true
+        // }
+      ],
+      realdata:[
         {
-          Persionname: "组织架构",
-          checkAll: false,
-          checkedroles: ["上海", "北京"],
-          roles: ["上海", "北京", "广州", "深圳"],
-          isIndeterminate: true
+            "id": 1,
+            "conname": "组织架构",
+            "pid": 0,
+            checkedroles:[3,5], //选中的权限id
+            checkAll: false, //是否全选
+            isIndeterminate:false, //记录选中状态（如果有一个选中就为true）
+            "child": [
+                {
+                    "id": 3,
+                    "conname": "组织创建",
+                    "pid": 1
+                },
+                {
+                    "id": 4,
+                    "conname": "组织成员列表+搜索",
+                    "pid": 1
+                },
+                {
+                    "id": 5,
+                    "conname": "组织成员邀请码",
+                    "pid": 1
+                },
+                {
+                    "id": 2,
+                    "conname": "组织架构查询",
+                    "pid": 1
+                }
+            ]
         },
         {
-          Persionname: "节目列表",
-          checkAll: false,
-          checkedroles: ["管理员"],
-          roles: ["管理员", "成员", "部门经理", "人事经理"],
-          isIndeterminate: true
+            "id": 6,
+            "conname": "角色",
+            "pid": 0,
+            checkedroles:[],
+            checkAll: false,
+            isIndeterminate:false,
+            "child": [
+                {
+                    "id": 7,
+                    "conname": "角色列表",
+                    "pid": 6
+                },
+                {
+                    "id": 8,
+                    "conname": "角色创建",
+                    "pid": 6
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "conname": "百灵音频库",
+            "pid": 0,
+            checkedroles:[],
+            checkAll: false,
+            isIndeterminate:false,
+            "child": [
+                {
+                    "id": 12,
+                    "conname": "音频库删除",
+                    "pid": 9
+                },
+                {
+                    "id": 13,
+                    "conname": "音频库查看",
+                    "pid": 9
+                },
+                {
+                    "id": 10,
+                    "conname": "音频库添加",
+                    "pid": 9
+                },
+                {
+                    "id": 11,
+                    "conname": "音频库修改",
+                    "pid": 9
+                }
+            ]
         }
       ]
     };
   },
+  mounted(){
+    this.getARoRuLi();
+  },
   methods: {
+    //获取权限组列表
+    getARoRuLi(){
+      ARoRuLi().then(res=>{
+        this.SetPermissionlist=res.data.data
+      })
+    },
     handleCheckAllChange(val,index) {
       this.SetPermissionlist[index].checkedroles=val?this.SetPermissionlist[index].roles:[];
       this.SetPermissionlist[index].isIndeterminate=false;
@@ -99,6 +197,13 @@ export default {
       this.checkAll = checkedCount === this.cities.length;
       this.isIndeterminate =
         checkedCount > 0 && checkedCount < this.cities.length;
+    },
+    //全选权限组操作
+    checkAllper(val,index){
+      debugger
+      if(val)
+      // this.SetPermissionlist[index].checkedroles=val?this.SetPermissionlist[index].roles:[];
+      this.SetPermissionlist[index].isIndeterminate=true;
     },
     delPression() {
       var _this = this;

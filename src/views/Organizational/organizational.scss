@@ -34,12 +34,17 @@
         .title{
             padding:20px 0 14px 0;
             color: #3A454B;
+            .titlename{
+                cursor: pointer;
+            }
         }
         .realion{
             font-weight: normal;
             color:#585F65;
         }
-        
+        .departlist {
+            margin: 0;
+        }
     }
     .rightbar{
         width: 1000px;

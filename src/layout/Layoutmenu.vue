@@ -20,8 +20,10 @@
                 </router-link>
             </li>
             <li>
-                <img src="@/assets/menuicon/permissions.png" alt="" />
-                <p>权限</p>
+                <router-link to="/PermissionManager">
+                    <img src="@/assets/menuicon/permissions.png" alt="" />
+                    <p>权限</p>
+                </router-link>
             </li>
         </ul>
     </div>

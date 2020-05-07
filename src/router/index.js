@@ -48,6 +48,18 @@ const router=new Router({
         meta: { title: '权限组'}
       }]
     },
+    //权限管理
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/PermissionManager',
+      children: [{
+        path: 'PermissionManager',
+        name: 'PermissionManager',
+        component: () => import('@/views/PermissionManager/index'),
+        meta: { title: '权限'}
+      }]
+    },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
   ]

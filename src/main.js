@@ -14,6 +14,8 @@ import router from './router'
 import 'babel-polyfill'
 import '@/icons' // icon
 
+import axios from 'axios'
+Vue.prototype.$ajax= axios
 
 
 Vue.use(VueClipboard);

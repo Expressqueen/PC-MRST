@@ -9,13 +9,10 @@
         @keyup.enter.native="doSearch"
         @clear="clearSearch"
       ></el-input>
-      <div class="title">
-        <p class="titlename left">
+      <div class="title clearfix">
+        <p class="titlename left" @click="collaspe()">
           乐播新瑞(北京)文化传媒有限公司
-          <i
-            :class="[collas==true?'el-icon-caret-top':'el-icon-caret-bottom']"
-            @click="collaspe()"
-          ></i>
+          <i :class="[collas==true?'el-icon-caret-top':'el-icon-caret-bottom']"></i>
         </p>
         <el-dropdown class="setname right" @command="Department" v-show="childlist.isMembers">
           <span class="el-dropdown-link">
@@ -58,8 +55,8 @@
             <el-option
               v-for="(item,index) in AddDepart.role"
               :key="index"
-              :label="item.label"
-              :value="item.value"
+              :label="item.iden"
+              :value="item.id"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -72,7 +69,15 @@
 </template>
 <script>
 import RightShowpage from "./rightshowpage";
-import { AJuDeps, apiAddress, SAJuDeps } from "@/api/index";
+import {
+  AJuDeps,
+  apiAddress,
+  SAJuDeps,
+  AJuDepC,
+  getAJuDepC,
+  ARoLi,
+  DeleteAJuDepC
+} from "@/api/index";
 export default {
   name: "organizational",
   components: { RightShowpage },
@@ -88,11 +93,10 @@ export default {
       AddDepart: {
         name: "",
         role: [
-          { value: "超级管理员", label: "超级管理员" },
-          { value: "第一事业部管理员", label: "第一事业部管理员" },
-          { value: "第二事业部管理员", label: "第二事业部管理员" },
-          { value: "第三事业部管理员", label: "第三事业部管理员" },
-          { value: "第四事业部管理员", label: "第四事业部管理员" }
+          { id: 1, rolename: "第一事业部门", iden: "负责人", pid: 0 },
+          { id: 21, rolename: "第三事业部", iden: "负责人", pid: 0 },
+          { id: 14, rolename: "第二事业部", iden: "负责人", pid: 0 },
+          { id: 8, rolename: "研发部", iden: "负责人", pid: 0 }
         ],
         roleval: ""
       },
@@ -118,30 +122,44 @@ export default {
     getAJuDeps() {
       AJuDeps().then(res => {
         this.setdata = res.data.data;
-        this.departlist = this.setdata.FirstList; //获取当前部门菜单
-        let showchildlistid = this.setdata.FirstList[this.copycurrent].id; //获取当前选中部门的id
-        this.childlist.righttitle = this.setdata.FirstList[
-          this.copycurrent
-        ].depname; //设置显示菜单的父级部门
-        this.$refs["rightshowpage"].rightmenulist = this.setdata.TwoList[showchildlistid]; //获取当前部门id对应的子部门
-        this.getSAJuDeps(this.setdata.TwoList[showchildlistid]);
+        this.AtendDepid();
       });
     },
-    //根据部门ID渲染右侧数据
-    getSAJuDeps(data) {
-      data.forEach(item=>{
-        if(item.pid==0){
-            this.SeachViewDep(item.id)
-        }
-      })
+    //根据id进行数据搜索
+    AtendDepid() {
+      this.departlist = this.setdata.FirstList; //获取当前部门菜单
+      let showchildlistid = this.setdata.FirstList[this.copycurrent].id; //获取当前选中部门的id
+      this.childlist.righttitle = this.setdata.FirstList[
+        this.copycurrent
+      ].depname; //设置显示菜单的父级部门
+      this.$refs["rightshowpage"].rightmenulist = this.setdata.TwoList[
+        showchildlistid
+      ]; //获取当前部门id对应的子部门
+      this.getSAJuDeps(this.setdata.TwoList[showchildlistid]);
     },
-    //搜索查看组织部门
+    //根据部门ID渲染右侧table数据
+    getSAJuDeps(data) {
+      data.forEach(item => {
+        if (item.pid == 0) {
+          this.SeachViewDep(item.id);
+        }
+      });
+    },
+    //搜索查看组织部门(渲染右侧数据)
     SeachViewDep(id, name) {
       let params = {
         dep_id: id,
         nickname: name
       };
       SAJuDeps(params).then(res => {
+        if (name != undefined) {
+          this.childlist.isMembers = false;
+          this.$refs["rightshowpage"].showselecttitle =
+            "相关成员（" + res.data.data.length + "）";
+          if (res.data.data.length < 1) {
+            this.childlist.searchres = false;
+          }
+        }
         this.$refs["rightshowpage"].restableData = res.data.data;
       });
     },
@@ -153,17 +171,22 @@ export default {
       this.$refs["rightshowpage"].rightmenulist = this.setdata.TwoList[
         selectdepyid
       ]; //根据选中部门显示右侧title
-      this.$refs["rightshowpage"].menucurrent=0;
-      this.getSAJuDeps(this.setdata.TwoList[
-        selectdepyid]);
+      this.$refs["rightshowpage"].menucurrent = 0;
+      this.getSAJuDeps(this.setdata.TwoList[selectdepyid]);
     },
+    //标题展开折叠
     collaspe() {
       this.collas = !this.collas;
     },
+    //组织部门操作
     Department(commond) {
       if (commond == "Add") {
         this.AddDepartment = true;
         this.Departmenttitle = "创建部门";
+        //获取角色列表
+        ARoLi().then(res => {
+          this.AddDepart.role = res.data.data;
+        });
       } else if (commond == "edit") {
         this.Departmenttitle = "编辑部门";
         let selectdept = this.departlist[this.copycurrent];
@@ -177,11 +200,17 @@ export default {
           type: "warning"
         })
           .then(() => {
-            this.departlist.splice(this.copycurrent, 1);
-            this.$message({
-              type: "success",
-              message: "删除成功!"
-            });
+            let selectdepid=this.setdata.FirstList[this.copycurrent].id;
+            let params={
+              dep_id:selectdepid
+            }
+            DeleteAJuDepC(params).then(res=>{
+              this.departlist.splice(this.copycurrent, 1);
+              this.$message({
+                type: "success",
+                message: "删除成功!"
+              });
+            })
           })
           .catch(() => {
             this.$message({
@@ -191,24 +220,28 @@ export default {
           });
       }
     },
+    //部门操作
     AddAddDepartment(formName) {
       var _this = this;
       this.$refs[formName].validate(valid => {
         if (valid) {
           if (_this.Departmenttitle == "创建部门") {
-            var addrole = {};
-            addrole.depname = _this.AddDepart.name;
-            addrole.id = _this.AddDepartment.value;
-            _this.departlist.push(addrole);
+            var params = {};
+            params.dep_id=0;
+            params.depname = _this.AddDepart.name;
+            params.role_id = _this.AddDepart.roleval;
+            //创建部门
+            AJuDepC(params).then(res => {
+              this.setdata.FirstList.push({
+                depname: _this.AddDepart.name,
+                id: _this.AddDepart.roleval
+              });
+            });
           } else if (_this.Departmenttitle == "编辑部门") {
-            debugger;
             let selectdept = _this.departlist[_this.copycurrent];
             selectdept.depname = _this.AddDepart.name;
             selectdept.id = _this.AddDepart.value;
           }
-
-          _this.AddDepartment = false;
-          _this.$message.success(_this.Departmenttitle + "成功!");
         } else {
           this.$message.error("请输入必填项!");
           return false;
@@ -217,17 +250,14 @@ export default {
     },
     //搜索成员
     doSearch() {
-      debugger;
       this.SeachViewDep(0, this.search);
-      this.childlist.isMembers = false;
-      this.$refs["rightshowpage"].showselecttitle = "相关成员（1）";
-      this.childlist.searchres = false;
     },
     //去除搜索
     clearSearch() {
       this.childlist.isMembers = true;
       this.$refs["rightshowpage"].showselecttitle = "全部";
       this.childlist.searchres = true;
+      this.AtendDepid();
     }
   }
 };
