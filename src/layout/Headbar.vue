@@ -1,7 +1,7 @@
 <template>
   <div class="headbar clearfix">
     <div class="layoutbar left">
-      <i class="el-icon-menu left" @click="drawer=true"></i>
+      <i class="el-icon-menu left" @click="drawer=true" style="cursor:pointer"></i>
       <Breadcrumb></Breadcrumb>
     </div>
     <div class="loginuser right">

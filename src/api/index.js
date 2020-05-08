@@ -11,4 +11,4 @@ export const getARegi=(params)=>get('/ARegi',params)  //注册页面请求数据
 export const ARegi=(params)=>post('/ARegi',params)  //用户注册接口
 export const ARoLi=(params)=>get('/ARoLi',params)   //权限组角色列表
 export const ARoRuLi=(params)=>get('/ARoRuLi',params)  //获取设置权限组结构列表
-export const PostARoRuLi=(params)=>get('/ARoRuLi',params) //创建权限组接口
+export const PostARoRuLi=(params)=>post('/ARoRuLi',params) //创建权限组接口

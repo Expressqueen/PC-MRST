@@ -29,7 +29,7 @@
       </div>
     </div>
     <!-- 创建权限组 -->
-    <el-dialog title="创建权限组" :visible.sync="Createpresion" width="420px" center>
+    <el-dialog title="创建权限组" :visible.sync="Createpresion" width="420px">
       <el-form label-position="top" label-width="80px" :model="persionform" ref="persionform">
         <el-form-item
           label="权限组名称"
@@ -91,57 +91,50 @@ export default {
     //获取权限组列表
     getRolelist(){
       ARoLi().then(res=>{
-        if(res.data.code==0){
-          this.tableData=res.data.data;
-        }else{
-          this.$message({
-            type:"error",
-            message:res.data.msg
-          })
-        }
+        this.tableData=res.data.data;
       })
     },
-    //创建权限组
+    //创建并配置权限组
     CreateSetpres() {
       this.$refs["persionform"].validate(valid => {
         if (valid) {
-          debugger
-          // let params = {};
-          // params.rolename = this.persionform.name;
-          // params.ident = this.persionform.identity;
-          // params.is_admin=this.persionform.DepartHead;
-          // params.pid=this.selectPid;
-          
           this.$refs["Setpermisson"].getpersionform.name=this.persionform.name;
           this.$refs["Setpermisson"].getpersionform.identity=this.persionform.identity;
           this.$refs["Setpermisson"].getpersionform.DepartHead=this.persionform.DepartHead;
           this.$refs["Setpermisson"].getpersionform.selectPid=this.selectPid;
+          this.$refs.persionform.resetFields();  //清空创建权限组form字段
+          this.Createpresion=false;
           //获取权限
           ARoRuLi({role_id:this.selectPid}).then(res=>{
             this.$refs["Setpermisson"].Setpresion=true;
-            debugger
+            this.$refs["Setpermisson"].SetPermissionlist=res.data.data;
           })
-          // this.tableData.push(newpresion);
-          // this.Createpresion = false;
-          // this.$message({
-          //   message: "创建权限组成功",
-          //   type: "success"
-          // });
         } else {
           return false;
         }
       });
+      
     },
     //创建权限组
     Createper(row){
         this.Createpresion=true;
-        this.selectPid=row.id;
+        this.selectPid=row.pid;
+    },
+    //获取权限
+    getrole(id){
+      ARoRuLi({role_id:id}).then(res=>{
+          this.$refs["Setpermisson"].Setpresion=true;
+          this.$refs["Setpermisson"].SetPermissionlist=res.data.data;
+      })
     },
     //设置权限组
     Setper(row) {
+      debugger
+      this.getrole(row.id);
       this.$refs['Setpermisson'].Setpresion = true;
       this.$refs['Setpermisson'].getpersionform.name=row.rolename;
       this.$refs['Setpermisson'].getpersionform.identity=row.iden;
+      
     },
     //关闭权限设置页面
     CloseSetpresion(setvalue) {
@@ -156,6 +149,9 @@ export default {
   margin: 0 auto;
   padding: 40px 0;
   height: calc(100vh - 56px);
+  .el-dialog__footer{
+    text-align: center;
+  }
   .temscope{
     color: #096DD9;
   }
@@ -204,7 +200,7 @@ export default {
   .setpresion {
     .el-dialog {
       height: 80%;
-      margin-top: 8% !important;
+      margin-top: 10vh!important;
     }
   }
 }

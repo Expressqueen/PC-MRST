@@ -1,6 +1,6 @@
 <template>
   <div class="setpermission">
-    <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion" @close="CreateSetpres()"> 
+    <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion" :close-on-click-modal="false"> 
       <el-form label-position="top" label-width="80px" :model="getpersionform" ref="getpersionform">
         <el-row :gutter="10">
           <el-col :span="8">
@@ -24,34 +24,17 @@
         </el-row>
       </el-form>
       <p class="delgroup">
-        <el-button type="primary" @click="CreateSetpres()" class="save">保存</el-button>
+        <el-button type="primary" @click="SavePermis()" class="save">保存</el-button>
         <el-button type="danger" plain @click="delPression()">删除权限组</el-button>
-        <!-- <button type="button" class="danger" @click="delPression()">删除权限组</button> -->
         <span class="alertinfo">*删除该权限组后，拥有该权限组的项目成员将自动更改为「默认权限组」。</span>
       </p>
-      <!-- <div class="permisgroup">
-        <el-collapse>
-          <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
-            <template slot="title">
-              <el-checkbox
-                :indeterminate="item.isIndeterminate"
-                v-model="item.checkAll"
-                @change="handleCheckAllChange($event,index)"
-              >{{item.Persionname}}</el-checkbox>
-            </template>
-            <el-checkbox-group v-model="item.checkedroles" @change="handleCheckedCitiesChange">
-                <el-checkbox v-for="role in item.roles" :label="role" :key="role">{{role}}</el-checkbox>
-              </el-checkbox-group>
-          </el-collapse-item>
-        </el-collapse>
-      </div> -->
       <div class="permisgroup">
         <el-collapse>
           <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
             <template slot="title">
               <el-checkbox v-model="item.checkAll" :indeterminate="item.isIndeterminate" @change="checkAllper($event,index)">{{item.conname}}</el-checkbox>
             </template>
-            <el-checkbox-group v-model="item.checkedroles">
+            <el-checkbox-group v-model="item.checkedroles" @change="checkper($event,index)">
                 <el-checkbox v-for="role in item.child" :label="role.id" :key="role.id" :value="role.id">{{role.conname}}</el-checkbox>
             </el-checkbox-group>
           </el-collapse-item>
@@ -61,7 +44,7 @@
   </div>
 </template>
 <script>
-import {ARoRuLi} from '@/api/index'
+import {ARoRuLi,PostARoRuLi} from '@/api/index'
 export default {
   name: "setpermission",
   props: {
@@ -79,132 +62,41 @@ export default {
       Setpresion:false,
       selectPid:0,
       SetPermissionlist: [
-        // {
-        //   Persionname: "组织架构",
-        //   checkAll: false,
-        //   checkedroles: ["上海", "北京"],
-        //   roles: ["上海", "北京", "广州", "深圳"],
-        //   isIndeterminate: true
-        // },
-        // {
-        //   Persionname: "节目列表",
-        //   checkAll: false,
-        //   checkedroles: ["管理员"],
-        //   roles: ["管理员", "成员", "部门经理", "人事经理"],
-        //   isIndeterminate: true
-        // }
-      ],
-      realdata:[
-        {
-            "id": 1,
-            "conname": "组织架构",
-            "pid": 0,
-            checkedroles:[3,5], //选中的权限id
-            checkAll: false, //是否全选
-            isIndeterminate:false, //记录选中状态（如果有一个选中就为true）
-            "child": [
-                {
-                    "id": 3,
-                    "conname": "组织创建",
-                    "pid": 1
-                },
-                {
-                    "id": 4,
-                    "conname": "组织成员列表+搜索",
-                    "pid": 1
-                },
-                {
-                    "id": 5,
-                    "conname": "组织成员邀请码",
-                    "pid": 1
-                },
-                {
-                    "id": 2,
-                    "conname": "组织架构查询",
-                    "pid": 1
-                }
-            ]
-        },
-        {
-            "id": 6,
-            "conname": "角色",
-            "pid": 0,
-            checkedroles:[],
-            checkAll: false,
-            isIndeterminate:false,
-            "child": [
-                {
-                    "id": 7,
-                    "conname": "角色列表",
-                    "pid": 6
-                },
-                {
-                    "id": 8,
-                    "conname": "角色创建",
-                    "pid": 6
-                }
-            ]
-        },
-        {
-            "id": 9,
-            "conname": "百灵音频库",
-            "pid": 0,
-            checkedroles:[],
-            checkAll: false,
-            isIndeterminate:false,
-            "child": [
-                {
-                    "id": 12,
-                    "conname": "音频库删除",
-                    "pid": 9
-                },
-                {
-                    "id": 13,
-                    "conname": "音频库查看",
-                    "pid": 9
-                },
-                {
-                    "id": 10,
-                    "conname": "音频库添加",
-                    "pid": 9
-                },
-                {
-                    "id": 11,
-                    "conname": "音频库修改",
-                    "pid": 9
-                }
-            ]
-        }
       ]
     };
   },
   mounted(){
-    this.getARoRuLi();
   },
   methods: {
-    //获取权限组列表
-    getARoRuLi(){
-      ARoRuLi().then(res=>{
-        this.SetPermissionlist=res.data.data
-      })
-    },
-    handleCheckAllChange(val,index) {
-      this.SetPermissionlist[index].checkedroles=val?this.SetPermissionlist[index].roles:[];
-      this.SetPermissionlist[index].isIndeterminate=false;
-    },
-    handleCheckedCitiesChange(value) {
-      let checkedCount = value.length;
-      this.checkAll = checkedCount === this.cities.length;
-      this.isIndeterminate =
-        checkedCount > 0 && checkedCount < this.cities.length;
-    },
     //全选权限组操作
     checkAllper(val,index){
-      debugger
-      if(val)
-      // this.SetPermissionlist[index].checkedroles=val?this.SetPermissionlist[index].roles:[];
-      this.SetPermissionlist[index].isIndeterminate=true;
+        this.SetPermissionlist[index].checkedroles=val?this.getCheckid(index):[];
+        this.SetPermissionlist[index].isIndeterminate=false;
     },
+    //权限选择
+    checkper(value,index){
+      let checkedCount = value.length;
+      this.SetPermissionlist[index].checkAll=checkedCount==this.getCheckid(index).length;
+      this.SetPermissionlist[index].isIndeterminate=checkedCount>0 && checkedCount < this.getCheckid(index).length;
+    },
+    //获取当前点击全选所有的数据
+    getCheckid(index){
+      let child=this.SetPermissionlist[index].child;
+      let selectid=[]
+      child.forEach(item => {
+        selectid.push(item.id);
+      });
+      return selectid;
+    },
+    //获取当前所有选择的id
+    getCheckAllid(){
+      let Allid=[];
+      this.SetPermissionlist.forEach(item=>{
+        Allid=Allid.concat(item.checkedroles);
+      })
+      return Allid;
+    },
+    //删除权限组
     delPression() {
       var _this = this;
       this.$confirm("此操作将永久删除该权限组, 是否继续?", "提示", {
@@ -217,7 +109,7 @@ export default {
             type: "success",
             message: "删除成功!"
           });
-          _this.$emit("CloseSet");
+          this.Setpresion=false;
         })
         .catch(() => {
           this.$message({
@@ -226,8 +118,20 @@ export default {
           });
         });
     },
-    CreateSetpres(){
-      this.Setpresion=false;
+    //保存权限组
+    SavePermis(){
+      let params={
+        rolename:this.getpersionform.name,
+        ident:this.getpersionform.identity,
+        is_admin:this.getpersionform.DepartHead,
+        pid:this.selectPid,
+        rule_id:this.getCheckAllid()
+      }
+      PostARoRuLi(params).then(res=>{
+        this.Setpresion=false;
+        this.$parent.Createpresion=false;
+      })
+      
     }
   }
 };
@@ -236,15 +140,12 @@ export default {
 .setpermission {
   .el-dialog__body {
     padding: 15px;
-    height: calc(100% - 120px);
+    height: calc(100% - 50px);
     overflow-y: scroll;
   }
   .el-dialog__footer {
     padding: 10px 30px 0;
   }
-  // .save {
-  //   // margin-top: 32px;
-  // }
   .delgroup {
     margin: 10px 0;
     .alertinfo {
