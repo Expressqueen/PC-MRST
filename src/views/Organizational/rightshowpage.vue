@@ -44,6 +44,7 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
+      <!-- 右侧table显示 -->
       <div class="restable" v-if="rightchild.searchres">
         <el-table :data="restableData" style="width: 100%" :show-header="false" @row-dblclick="showdetailinfo">
           <el-table-column prop="nickname" label="姓名" width="120">
@@ -54,7 +55,7 @@
           </el-table-column>
           <el-table-column prop="depname" label="部门" width="180"></el-table-column>
           <el-table-column prop="position" label="角色"></el-table-column>
-          <el-table-column prop="ident" label="操作" align="right" width="100">
+          <el-table-column prop="role" label="操作" align="right" width="120">
             <template slot-scope="scope">
                 <!-- {{scope.row.ident}} -->
                 <el-dropdown @command="Setrole">
@@ -65,37 +66,23 @@
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item :command="{type:'admin',scope}">管理员</el-dropdown-item>
-                        <el-dropdown-item :command="{type:'Members',scope}">成员</el-dropdown-item>
-                        <el-dropdown-item :command="{type:'disaccount',scope}" class="disable">停用账号</el-dropdown-item>
-                        <el-dropdown-item :command="{type:'del',scope}" class="del">删除账号</el-dropdown-item>
+                        <el-dropdown-item v-for="(item,index) in scope.row.role" :key="index" 
+                          :class="[{disable:item.type==2},{del:item.type==3}]"
+                          :command="{item:item,scope}">
+                          {{item.ident}}
+                        </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </template>
           </el-table-column>
         </el-table>
       </div>
+      <!-- 没有查询到数据显示 -->
       <div class="resnull" v-else>
         <i class="el-icon-user-solid"></i>
         <p>暂无成员</p>
       </div>
     </div>
-    <el-dialog :title="setDioTitle" :visible.sync="AddOrganization" width="800px" :close-on-click-modal="false">
-      <el-form :model="AddOrgan" style="width:300px;margin:0 auto;">
-        <el-form-item label="名称" :label-width="formLabelWidth">
-          <el-input v-model="AddOrgan.name" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="角色" :label-width="formLabelWidth" filterable>
-          <el-select v-model="AddOrgan.role" placeholder="请选择活动区域">
-            <el-option label="活动运营" value="shanghai"></el-option>
-            <el-option label="市场运营" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="setDiorgan()">确 定</el-button>
-      </div>
-    </el-dialog>
     <el-dialog title="邀请成员" :visible.sync="invitemembers" width="800px" height="300px" :close-on-click-modal="false">
         <InviteMembers ref="InviteMember"></InviteMembers>
     </el-dialog>
@@ -108,8 +95,8 @@
 <script>
 import InviteMembers from '@/views/Organizational/Invitemembers'
 import DetailInfo from '@/views/Organizational/detailinfo'
-import {hasClass} from '@/utils/index'
-import {SAJuDeps,AUsRegs} from '@/api/index'
+// import {hasClass} from '@/utils/index'
+import {SAJuDeps,AUsRegs,EditRolesType} from '@/api/index'
 export default {
   name: "rightshowpage",
   props:{
@@ -125,9 +112,9 @@ export default {
   },
   data() {
     return {
-      menucurrent: 0,
-      parentindex:0,
-      Cselectindex: null,
+      menucurrent: 0, //当前一级菜单选中状态
+      parentindex:0, //父级选中状态
+      Cselectindex: null, //当前二级选中状态
       detailedinfo:false,
       showselecttitle:"全部",
       setDioTitle:"创建部门",
@@ -186,20 +173,9 @@ export default {
     },
     //对部门进行增删改操作
     Secondary(command) {
-        
-        switch(command){
-            case 'Add':
-                this.setDioTitle="创建部门";
-                this.AddOrganization=true;
-                break;
-            case 'Edit':
-                this.AddOrganization=true;
-                this.setDioTitle="编辑部门"
-                break;
-            case 'Del':
-                break;
-            case 'Inmembers':
-                let selectdepid=this.getdepid();
+      //邀请成员
+      if(command=="Inmembers"){
+        let selectdepid=this.getdepid();
                 AUsRegs({dep_id:selectdepid}).then(res=>{
                   if(res.data.code==0){
                     this.$refs['InviteMember'].CopyUrl=res.data.data;
@@ -211,20 +187,9 @@ export default {
                   }
                 })
                 this.invitemembers=true;
-                break;
-        }
-    },
-    //增加修改确定方法
-    setDiorgan(){
-        if(this.setDioTitle="创建部门"){
-          // AJuDepC({}).then(res=>{
-
-          // })
-            this.$message("创建部门成功")
-        }else if(this.setDioTitle="编辑部门"){
-             this.$message("编辑部门成功")
-        }
-
+      }else{ //增删改操作调用父级页面方法
+        this.$parent.Department(command,this.getdepid());
+      }
     },
     //获取当前选中右侧的部门父级id
     getdepid(){
@@ -240,20 +205,16 @@ export default {
 
     //显示列表权限修改
     Setrole(command){
-      switch(command.type){
-        case 'admin':
-            command.scope.row.operation="管理员"
-          break;
-        case 'Members':
-            command.scope.row.operation="成员"
-            break;
-        case 'disaccount':
-            command.scope.row.operation="停用"
-            break;
-        case 'del':
-            this.restableData.splice(command.scope.$index, 1);
-            break;
+      let params={
+        user_id:command.scope.row.user_id,
+        old_role_id:command.scope.row.old_role_id,
+        dep_id:command.scope.row.dep_id,
+        role_id:command.item.role_id,
+        type:command.item.type
       }
+      EditRolesType(params).then(res=>{
+        this.$parent.SeachViewDep(this.getdepid());
+      })
     },
     //table行双击事件
     showdetailinfo(row,column,event){

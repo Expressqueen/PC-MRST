@@ -66,7 +66,7 @@
 </template>
 <script>
 import SetPermission from "@/views/PermissionGroup/SetPermission";
-import {ARoLi,ARoRuLi,PostARoRuLi} from '@/api/index'
+import {ARoLi,ARoRuLi,PostARoRuLi,EditAroRuLi} from '@/api/index'
 export default {
   name: "PermissionGroup",
   components: { SetPermission },
@@ -101,7 +101,7 @@ export default {
           this.$refs["Setpermisson"].getpersionform.name=this.persionform.name;
           this.$refs["Setpermisson"].getpersionform.identity=this.persionform.identity;
           this.$refs["Setpermisson"].getpersionform.DepartHead=this.persionform.DepartHead;
-          this.$refs["Setpermisson"].getpersionform.selectPid=this.selectPid;
+          this.$refs["Setpermisson"].selectPid=this.selectPid;
           this.$refs.persionform.resetFields();  //清空创建权限组form字段
           this.Createpresion=false;
           //获取权限
@@ -118,7 +118,8 @@ export default {
     //创建权限组
     Createper(row){
         this.Createpresion=true;
-        this.selectPid=row.pid;
+        this.selectPid=row.id;
+        this.$refs["Setpermisson"].stateType="Add";
     },
     //获取权限
     getrole(id){
@@ -129,12 +130,23 @@ export default {
     },
     //设置权限组
     Setper(row) {
-      debugger
-      this.getrole(row.id);
       this.$refs['Setpermisson'].Setpresion = true;
       this.$refs['Setpermisson'].getpersionform.name=row.rolename;
-      this.$refs['Setpermisson'].getpersionform.identity=row.iden;
-      
+      this.$refs['Setpermisson'].getpersionform.identity=row.ident;
+      this.$refs["Setpermisson"].selectPid=row.id;
+      this.$refs["Setpermisson"].stateType="Edit";
+      if(row.iden=="负责人") 
+        this.$refs['Setpermisson'].getpersionform.DepartHead="1";
+      else 
+        this.$refs['Setpermisson'].getpersionform.DepartHead="0";
+      let params={
+        role_id:row.id,
+        pid:row.pid
+      }
+      EditAroRuLi(params).then(res=>{
+        this.$refs["Setpermisson"].SetPermissionlist=res.data.data;
+        this.$refs["Setpermisson"].RightnowSelectid=this.$refs["Setpermisson"].getCheckAllid();
+      })
     },
     //关闭权限设置页面
     CloseSetpresion(setvalue) {

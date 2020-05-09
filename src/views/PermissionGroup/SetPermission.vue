@@ -1,6 +1,12 @@
 <template>
   <div class="setpermission">
-    <el-dialog title="权限设置" :visible.sync="Setpresion" width="960px" class="setpresion" :close-on-click-modal="false"> 
+    <el-dialog
+      title="权限设置"
+      :visible.sync="Setpresion"
+      width="960px"
+      class="setpresion"
+      :close-on-click-modal="false"
+    >
       <el-form label-position="top" label-width="80px" :model="getpersionform" ref="getpersionform">
         <el-row :gutter="10">
           <el-col :span="8">
@@ -15,7 +21,7 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="是否为部门负责人" prop="DepartHead">
-              <el-select v-model="getpersionform.DepartHead">
+              <el-select v-model="getpersionform.DepartHead" :disabled="stateType=='Edit'">
                 <el-option label="是" value="1"></el-option>
                 <el-option label="否" value="0"></el-option>
               </el-select>
@@ -32,10 +38,19 @@
         <el-collapse>
           <el-collapse-item v-for="(item,index) in SetPermissionlist" :key="index" :name="index">
             <template slot="title">
-              <el-checkbox v-model="item.checkAll" :indeterminate="item.isIndeterminate" @change="checkAllper($event,index)">{{item.conname}}</el-checkbox>
+              <el-checkbox
+                v-model="item.checkAll"
+                :indeterminate="item.isIndeterminate"
+                @change="checkAllper($event,index)"
+              >{{item.conname}}</el-checkbox>
             </template>
             <el-checkbox-group v-model="item.checkedroles" @change="checkper($event,index)">
-                <el-checkbox v-for="role in item.child" :label="role.id" :key="role.id" :value="role.id">{{role.conname}}</el-checkbox>
+              <el-checkbox
+                v-for="role in item.child"
+                :label="role.id"
+                :key="role.id"
+                :value="role.id"
+              >{{role.conname}}</el-checkbox>
             </el-checkbox-group>
           </el-collapse-item>
         </el-collapse>
@@ -44,57 +59,68 @@
   </div>
 </template>
 <script>
-import {ARoRuLi,PostARoRuLi} from '@/api/index'
+import { ARoRuLi, PostARoRuLi, EditAJuRuLiUp } from "@/api/index";
 export default {
   name: "setpermission",
-  props: {
-    isvibleSet: {
-      type: Boolean
-    }
-  },
   data() {
     return {
       getpersionform: {
         name: "",
         identity: "",
-        DepartHead:""
+        DepartHead: ""
       },
-      Setpresion:false,
-      selectPid:0,
-      SetPermissionlist: [
-      ]
+      Setpresion: false,
+      selectPid: 0, //当前权限组id
+      RightnowSelectid: [], //记录当前选择的权限id
+      stateType: "", //保存操作判断是增加还是编辑
+      SetPermissionlist: [] //获取权限组列表
     };
   },
-  mounted(){
-  },
+  mounted() {},
   methods: {
     //全选权限组操作
-    checkAllper(val,index){
-        this.SetPermissionlist[index].checkedroles=val?this.getCheckid(index):[];
-        this.SetPermissionlist[index].isIndeterminate=false;
+    checkAllper(val, index) {
+      this.SetPermissionlist[index].checkedroles = val
+        ? this.getCheckid(index)
+        : [];
+      this.SetPermissionlist[index].isIndeterminate = false;
     },
     //权限选择
-    checkper(value,index){
+    checkper(value, index) {
       let checkedCount = value.length;
-      this.SetPermissionlist[index].checkAll=checkedCount==this.getCheckid(index).length;
-      this.SetPermissionlist[index].isIndeterminate=checkedCount>0 && checkedCount < this.getCheckid(index).length;
+      this.SetPermissionlist[index].checkAll =
+        checkedCount == this.getCheckid(index).length;
+      this.SetPermissionlist[index].isIndeterminate =
+        checkedCount > 0 && checkedCount < this.getCheckid(index).length;
     },
     //获取当前点击全选所有的数据
-    getCheckid(index){
-      let child=this.SetPermissionlist[index].child;
-      let selectid=[]
+    getCheckid(index) {
+      let child = this.SetPermissionlist[index].child;
+      let selectid = [];
       child.forEach(item => {
         selectid.push(item.id);
       });
       return selectid;
     },
     //获取当前所有选择的id
-    getCheckAllid(){
-      let Allid=[];
-      this.SetPermissionlist.forEach(item=>{
-        Allid=Allid.concat(item.checkedroles);
-      })
+    getCheckAllid() {
+      let Allid = [];
+      this.SetPermissionlist.forEach(item => {
+        if (item.checkedroles.length > 0) Allid.push(item.id);
+        Allid = Allid.concat(item.checkedroles);
+      });
       return Allid;
+    },
+    //获取本次保存的id相比较上一次的选择id减少的id[]组
+    getCheckDelid(oldid,newid) {
+      let result = new Array();
+      let c = newid.toString();
+      for (let i = 0; i < oldid.length; i++) {
+        if (c.indexOf(oldid[i].toString()) == -1) {
+          result.push(oldid[i]);
+        }
+      }
+      return result;
     },
     //删除权限组
     delPression() {
@@ -109,7 +135,7 @@ export default {
             type: "success",
             message: "删除成功!"
           });
-          this.Setpresion=false;
+          this.Setpresion = false;
         })
         .catch(() => {
           this.$message({
@@ -119,19 +145,36 @@ export default {
         });
     },
     //保存权限组
-    SavePermis(){
-      let params={
-        rolename:this.getpersionform.name,
-        ident:this.getpersionform.identity,
-        is_admin:this.getpersionform.DepartHead,
-        pid:this.selectPid,
-        rule_id:this.getCheckAllid()
+    SavePermis() {
+      //创建权限组
+      if (this.stateType == "Add") {
+        let params = {
+          rolename: this.getpersionform.name,
+          ident: this.getpersionform.identity,
+          is_admin: this.getpersionform.DepartHead,
+          pid: this.selectPid,
+          rule_id: this.getCheckAllid()
+        };
+        PostARoRuLi(params).then(res => {
+          this.Setpresion = false;
+          this.$parent.Createpresion = false;
+          this.$parent.getRolelist();
+        });
+      } else {   //编辑权限组
+        let params = {
+          role_id: this.selectPid,
+          ident: this.getpersionform.identity,
+          rule_id: this.getCheckAllid(),
+          del_rule_id: this.getCheckDelid(this.RightnowSelectid,this.getCheckAllid())
+        };
+        EditAJuRuLiUp(params).then(res => {
+          this.Setpresion = false;
+          this.$message({
+            type: "success",
+            message: "权限设置成功!"
+          });
+        });
       }
-      PostARoRuLi(params).then(res=>{
-        this.Setpresion=false;
-        this.$parent.Createpresion=false;
-      })
-      
     }
   }
 };

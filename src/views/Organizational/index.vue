@@ -20,8 +20,8 @@
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="Add">创建部门</el-dropdown-item>
-            <el-dropdown-item command="edit">编辑部门</el-dropdown-item>
-            <el-dropdown-item command="del">删除部门</el-dropdown-item>
+            <el-dropdown-item command="Edit">编辑部门</el-dropdown-item>
+            <el-dropdown-item command="Del">删除部门</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -55,7 +55,7 @@
             <el-option
               v-for="(item,index) in AddDepart.role"
               :key="index"
-              :label="item.iden"
+              :label="item.rolename"
               :value="item.id"
             ></el-option>
           </el-select>
@@ -75,7 +75,6 @@ import {
   SAJuDeps,
   AJuDepC,
   getAJuDepC,
-  ARoLi,
   DeleteAJuDepC
 } from "@/api/index";
 export default {
@@ -90,14 +89,9 @@ export default {
       Departmenttitle: "创建部门",
       righttitle: "第一事业部",
       departlist: [],
-      AddDepart: {
+      AddDepart: {   //创建部门字段
         name: "",
-        role: [
-          { id: 1, rolename: "第一事业部门", iden: "负责人", pid: 0 },
-          { id: 21, rolename: "第三事业部", iden: "负责人", pid: 0 },
-          { id: 14, rolename: "第二事业部", iden: "负责人", pid: 0 },
-          { id: 8, rolename: "研发部", iden: "负责人", pid: 0 }
-        ],
+        role: [],
         roleval: ""
       },
       formLabelWidth: "60px",
@@ -110,7 +104,8 @@ export default {
         righttitle: "",
         isMembers: true,
         searchres: true
-      }
+      },
+      childselectid:null,//二级组织架构选中的id
     };
   },
   mounted() {
@@ -145,13 +140,14 @@ export default {
         }
       });
     },
-    //搜索查看组织部门(渲染右侧数据)
+    //搜索查看组织部门(渲染右侧table数据)
     SeachViewDep(id, name) {
       let params = {
         dep_id: id,
         nickname: name
       };
       SAJuDeps(params).then(res => {
+        this.childlist.searchres=true;
         if (name != undefined) {
           this.childlist.isMembers = false;
           this.$refs["rightshowpage"].showselecttitle =
@@ -161,6 +157,8 @@ export default {
           }
         }
         this.$refs["rightshowpage"].restableData = res.data.data;
+      }).catch(err=>{
+        this.childlist.searchres = false;
       });
     },
     //菜单切换更改右侧部门菜单和数据
@@ -179,33 +177,44 @@ export default {
       this.collas = !this.collas;
     },
     //组织部门操作
-    Department(commond) {
+    Department(commond,depid) {
+      debugger
+      //this.$refs['AddDepart'].resetFields();
+      if(typeof(depid)=="number")
+      this.childselectid=depid;
+      else this.childselectid=0;
       if (commond == "Add") {
         this.AddDepartment = true;
         this.Departmenttitle = "创建部门";
         //获取角色列表
-        ARoLi().then(res => {
+        getAJuDepC({dep_id:this.childselectid}).then(res => {
           this.AddDepart.role = res.data.data;
         });
-      } else if (commond == "edit") {
+      } else if (commond == "Edit") {
         this.Departmenttitle = "编辑部门";
         let selectdept = this.departlist[this.copycurrent];
         this.AddDepart.name = selectdept.depname;
         this.AddDepart.roleval = "超级管理员";
         this.AddDepartment = true;
-      } else if (commond == "del") {
+      } else if (commond == "Del") {
         this.$confirm("此操作将永久删除该部门, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         })
           .then(() => {
+            debugger
             let selectdepid=this.setdata.FirstList[this.copycurrent].id;
+            if(typeof(depid)=="number"){
+                selectdepid=depid;
+            }
             let params={
               dep_id:selectdepid
             }
             DeleteAJuDepC(params).then(res=>{
               this.departlist.splice(this.copycurrent, 1);
+              this.getAJuDeps();
+              Object.assign(this.$refs["rightshowpage"].$data, this.$refs["rightshowpage"].$options.data());
               this.$message({
                 type: "success",
                 message: "删除成功!"
@@ -222,26 +231,28 @@ export default {
     },
     //部门操作
     AddAddDepartment(formName) {
+      debugger
       var _this = this;
       this.$refs[formName].validate(valid => {
         if (valid) {
           if (_this.Departmenttitle == "创建部门") {
-            var params = {};
-            params.dep_id=0;
-            params.depname = _this.AddDepart.name;
-            params.role_id = _this.AddDepart.roleval;
+            var params = {
+              dep_id:_this.childselectid,
+              depname:_this.AddDepart.name,
+              role_id:_this.AddDepart.roleval
+            };
             //创建部门
             AJuDepC(params).then(res => {
-              this.setdata.FirstList.push({
-                depname: _this.AddDepart.name,
-                id: _this.AddDepart.roleval
-              });
+              this.getAJuDeps();
+              this.AddDepartment=false;
+              this.$refs['AddDepart'].resetFields();
             });
           } else if (_this.Departmenttitle == "编辑部门") {
             let selectdept = _this.departlist[_this.copycurrent];
             selectdept.depname = _this.AddDepart.name;
             selectdept.id = _this.AddDepart.value;
           }
+          
         } else {
           this.$message.error("请输入必填项!");
           return false;

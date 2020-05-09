@@ -27,7 +27,6 @@
         </el-card>
       </div>
     </div>
-
     <!-- 创建权限 -->
     <el-dialog title="创建权限" :visible.sync="dialogCreatepermis" :close-on-click-modal="false">
       <el-form
@@ -39,8 +38,9 @@
       >
         <el-form-item label="父级" prop="Plevel">
           <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+            <el-option v-for="(item,index) in Createpermisform.PlevelList" :key="index" :label="item.conname" :value="item.pid"></el-option>
+            <!-- <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option> -->
           </el-select>
         </el-form-item>
         <el-form-item label="名称" prop="name">
@@ -79,8 +79,17 @@
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件</div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="" v-else-if="showIconType=='Icon'">
-          <el-input v-model="Createpermisform.iconclass" autocomplete="off" placeholder="选择图标"></el-input>
+        <el-form-item label v-else-if="showIconType=='Icon'">
+          <el-popover placement="bottom-end" width="450" trigger="click" :ref="`popover`">
+            <el-input slot="reference" v-model="selecticonclass" autocomplete="off" placeholder="选择图标"></el-input>
+            <div class="SetIcon">
+                <div class="Iconhead clearfix">
+                    <p class="left">选择图标</p>
+                    <p class="right" @click="$refs[`popover`].doClose()"><i class="el-icon-close"></i></p>
+                </div>
+                <GetIcon :Seticonclass.sync="selecticonclass"></GetIcon>    
+            </div>
+          </el-popover>
         </el-form-item>
         <el-form-item label="备注" prop="note">
           <el-input v-model="Createpermisform.note" autocomplete="off" placeholder="输入备注"></el-input>
@@ -97,23 +106,26 @@
   </div>
 </template>
 <script>
-import { ARoRuLi } from "@/api/index";
+import { getPerlist,SARuCrLi } from "@/api/index";
+import GetIcon from "@/components/SetIcon";
 export default {
   name: "PermissionManager",
+  components: { GetIcon },
   data() {
     return {
       AroList: [],
       dialogCreatepermis: false,
-      showIconType:null,
+      showIconType: null,
+      selecticonclass: "",
       Createpermisform: {
         Plevel: "",
+        PlevelList:[],
         name: "",
         path: "",
         showtype: "",
         ICON: [],
         note: "",
-        sort: "",
-        iconclass:""
+        sort: ""
       },
       fileList: [
         {
@@ -126,13 +138,20 @@ export default {
   },
   mounted() {
     this.getAroList();
+    this.getParentNode();
   },
   methods: {
-    //获取当前权限组列表
+    //获取当前权限列表
     getAroList() {
-      ARoRuLi().then(res => {
+      getPerlist().then(res => {
         this.AroList = res.data.data;
       });
+    },
+    //获取父级节点列表
+    getParentNode(){
+      SARuCrLi().then(res=>{
+        this.Createpermisform.PlevelList=res.data.data;
+      })
     },
     //删除当前权限组下的权限
     CloseTags(tag, pindex, index) {
@@ -159,16 +178,13 @@ export default {
     SelectICON(value) {
       if (this.Createpermisform.ICON.length > 1)
         this.Createpermisform.ICON.splice(0, 1);
-    
-      let val=value.join(',');
-      this.showIconType=val;
+      let val = value.join(",");
+      this.showIconType = val;
     },
     //点击文件image已上传文件的钩子
-    UpReady(file, fileList){
-    },
+    UpReady(file, fileList) {},
     //上传的Image移除方法
-    RemoveImage(file){
-    },
+    RemoveImage(file) {},
     //重置表单
     resetpermis(formName) {
       this.$refs[formName].resetFields();
@@ -248,15 +264,15 @@ export default {
       }
       .el-input-number {
         width: 100%;
-        .el-input__inner{
-            text-align: left;
+        .el-input__inner {
+          text-align: left;
         }
       }
-      .upload-demo{
-          .el-upload__tip{
-              margin: 0;
-              line-height: 24px;
-          }
+      .upload-demo {
+        .el-upload__tip {
+          margin: 0;
+          line-height: 24px;
+        }
       }
     }
   }

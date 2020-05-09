@@ -51,7 +51,7 @@ service.interceptors.response.use(
       Message({
         message: response.data.msg,
         type: 'error',
-        duration: 5 * 1000
+        duration: 3 * 1000
       });
       return Promise.reject(response.data);
     }
