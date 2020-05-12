@@ -3,44 +3,60 @@
     <div class="pergroup">
       <div class="psghead clearfix">
         <span class="mark left">权限管理</span>
-        <a href="javascript:void(0)" class="temscope right" @click="dialogCreatepermis=true">
-          <i class="el-icon-circle-plus-outline"></i>
-          创建权限
-        </a>
+        <el-row class="right">
+          <el-button type="primary" @click="AddRole">
+            <i class="el-icon-circle-plus-outline"></i>创建权限
+          </el-button>
+          <el-button type="warning" @click="EditRole">
+            <i class="el-icon-edit"></i>编辑权限
+          </el-button>
+          <el-button type="danger" @click="DelRole">
+            <i class="el-icon-delete"></i>删除
+          </el-button>
+        </el-row>
       </div>
       <div class="psbody">
-        <el-card class="box-card" v-for="(item,index) in AroList" :key="index">
-          <div slot="header" class="clearfix">
-            <span>{{item.conname}}</span>
-            <p class="regicon right">
-              <i class="el-icon-edit blue" @click="EditRole(index)"></i>
-              <i class="el-icon-delete red" @click="DelRole(index)"></i>
-            </p>
-          </div>
-          <el-tag
-            :key="Tindex"
-            v-for="(tag,Tindex) in item.child"
-            closable
-            :disable-transitions="false"
-            @close="CloseTags(tag.id,index,Tindex)"
-          >{{tag.conname}}</el-tag>
-        </el-card>
+        <el-collapse>
+          <el-collapse-item
+            v-for="(item,index) in AroList"
+            :key="index"
+            :name="index"
+            :title="item.conname"
+            v-model="showPerims"
+          >
+            <el-row>
+              <el-button
+                type="primary"
+                plain
+                :key="Tindex"
+                size="small"
+                v-for="(tag,Tindex) in item.child"
+                @click="SelectRole(tag.id,index,Tindex)"
+                :class="{Sbtn:ButtonroleId==tag.id}"
+              >{{tag.conname}}</el-button>
+            </el-row>
+          </el-collapse-item>
+        </el-collapse>
       </div>
     </div>
     <!-- 创建权限 -->
-    <el-dialog title="创建权限" :visible.sync="dialogCreatepermis" :close-on-click-modal="false">
+    <el-dialog :title="Pretitle" :visible.sync="dialogCreatepermis" :close-on-click-modal="false">
       <el-form
         :model="Createpermisform"
         label-position="right"
-        label-width="80px"
+        label-width="90px"
         class="permisform"
         ref="Createpermisform"
+        :rules="permisformrule"
       >
         <el-form-item label="父级" prop="Plevel">
           <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点">
-            <el-option v-for="(item,index) in Createpermisform.PlevelList" :key="index" :label="item.conname" :value="item.pid"></el-option>
-            <!-- <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option> -->
+            <el-option
+              v-for="(item,index) in Createpermisform.PlevelList"
+              :key="index"
+              :label="item.conname"
+              :value="item.pid"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="名称" prop="name">
@@ -55,18 +71,19 @@
         </el-form-item>
         <el-form-item label="展示方式" prop="showtype">
           <el-select v-model="Createpermisform.showtype" placeholder="请选择展示方式">
-            <el-option label="导航" value="导航"></el-option>
-            <el-option label="操作" value="操作"></el-option>
+            <el-option label="操作" value="1"></el-option>
+            <el-option label="导航" value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="ICON" prop="ICON" style="margin-bottom:10px;">
+        <el-form-item label="ICON" prop="ICON">
           <el-checkbox-group v-model="Createpermisform.ICON" @change="SelectICON">
-            <el-checkbox label="Image" name="ICONtype" value="Image">图片</el-checkbox>
-            <el-checkbox label="Icon" name="ICONtype" value="Icon">font</el-checkbox>
-            <el-checkbox label="hasnone" name="ICONtype" value="hasnone">无</el-checkbox>
+            <el-checkbox label="1" name="ICONtype" value="1">图片</el-checkbox>
+            <el-checkbox label="2" name="ICONtype" value="2">font</el-checkbox>
+            <el-checkbox label="3" name="ICONtype" value="3">无</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-form-item label v-if="showIconType=='Image'">
+        <!-- 选择图片时显示 -->
+        <el-form-item label v-if="showIconType=='1'">
           <el-upload
             class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
@@ -79,15 +96,23 @@
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件</div>
           </el-upload>
         </el-form-item>
-        <el-form-item label v-else-if="showIconType=='Icon'">
+        <!-- 选择Icon时显示 -->
+        <el-form-item label v-else-if="showIconType=='2'">
           <el-popover placement="bottom-end" width="450" trigger="click" :ref="`popover`">
-            <el-input slot="reference" v-model="selecticonclass" autocomplete="off" placeholder="选择图标"></el-input>
+            <el-input
+              slot="reference"
+              v-model="selecticonclass"
+              autocomplete="off"
+              placeholder="选择图标"
+            ></el-input>
             <div class="SetIcon">
-                <div class="Iconhead clearfix">
-                    <p class="left">选择图标</p>
-                    <p class="right" @click="$refs[`popover`].doClose()"><i class="el-icon-close"></i></p>
-                </div>
-                <GetIcon :Seticonclass.sync="selecticonclass"></GetIcon>    
+              <div class="Iconhead clearfix">
+                <p class="left">选择图标</p>
+                <p class="right" @click="$refs[`popover`].doClose()">
+                  <i class="el-icon-close"></i>
+                </p>
+              </div>
+              <GetIcon :Seticonclass.sync="selecticonclass"></GetIcon>
             </div>
           </el-popover>
         </el-form-item>
@@ -98,7 +123,7 @@
           <el-input-number v-model="Createpermisform.sort" controls-position="right" :min="0"></el-input-number>
         </el-form-item>
         <el-form-item label>
-          <el-button type="primary" @click="dialogCreatepermis = false">立即创建</el-button>
+          <el-button type="primary" @click="Primsmannage">立即创建</el-button>
           <el-button @click="resetpermis('Createpermisform')">重 置</el-button>
         </el-form-item>
       </el-form>
@@ -106,7 +131,14 @@
   </div>
 </template>
 <script>
-import { getPerlist,SARuCrLi } from "@/api/index";
+import {
+  getPerlist,
+  SARuCrLi,
+  AddARuCrLi,
+  EditARuCrUp,
+  DelARuDe,
+  SearchARuCrUp
+} from "@/api/index";
 import GetIcon from "@/components/SetIcon";
 export default {
   name: "PermissionManager",
@@ -114,18 +146,38 @@ export default {
   data() {
     return {
       AroList: [],
+      showPerims: "", //当前操作的权限面板
       dialogCreatepermis: false,
       showIconType: null,
       selecticonclass: "",
+      Pretitle: "创建权限",
+      ButtonroleId: "",
       Createpermisform: {
         Plevel: "",
-        PlevelList:[],
+        PlevelList: [],
         name: "",
         path: "",
         showtype: "",
         ICON: [],
         note: "",
         sort: ""
+      },
+      permisformrule: {
+        Plevel: [{ required: true, message: "请选择父级", trigger: "change" }],
+        name: [{ required: true, message: "请填写权限名称", trigger: "blur" }],
+        path: [{ required: true, message: "请填写路径", trigger: "blur" }],
+        showtype: [
+          { required: true, message: "请选择展示方式", trigger: "change" }
+        ],
+        ICON: [
+          {
+            type: "array",
+            required: true,
+            message: "请至少选择一个图标",
+            trigger: "change"
+          }
+        ],
+        sort: [{ required: true, message: "请输入排序", trigger: "blur" }]
       },
       fileList: [
         {
@@ -148,31 +200,68 @@ export default {
       });
     },
     //获取父级节点列表
-    getParentNode(){
-      SARuCrLi().then(res=>{
-        this.Createpermisform.PlevelList=res.data.data;
-      })
+    getParentNode() {
+      SARuCrLi().then(res => {
+        this.Createpermisform.PlevelList = res.data.data;
+      });
+    },
+    //创建权限
+    AddRole(){
+      this.Pretitle = "创建权限";
+      this.dialogCreatepermis=true;
+    },
+    //修改权限
+    EditRole() {
+      this.Pretitle = "编辑权限";
+      if (this.ButtonroleId == "") {
+        this.$message.warning("请选择要编辑的权限");
+      } else {
+        this.dialogCreatepermis = true;
+        this.getDancleInfo();
+      }
+    },
+    //获取单个权限信息
+    getDancleInfo() {
+      SearchARuCrUp({ rule_id: this.ButtonroleId }).then(res => {
+        let resdata = res.data.data[0];
+        this.Createpermisform.Plevel = resdata.pid;
+        this.Createpermisform.name = resdata.conname;
+        this.Createpermisform.path = resdata.route;
+        this.Createpermisform.showtype = resdata.dis + "";
+        this.Createpermisform.ICON.push(resdata.icon + "");
+        this.SelectICON(this.Createpermisform.ICON);
+        // this.fileList.url=resdata.img;
+        this.selecticonclass = resdata.font;
+        this.Createpermisform.note = resdata.remark;
+        this.Createpermisform.sort = resdata.sort;
+      });
     },
     //删除当前权限组下的权限
-    CloseTags(tag, pindex, index) {
-      this.$confirm("此操作将永久删除该权限, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.AroList[pindex].child.splice(index, 1);
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
+    DelRole() {
+      if (this.ButtonroleId == "") {
+        this.$message.warning("请选择要操作的权限");
+      } else {
+        this.$confirm("此操作将永久删除该权限, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
         })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除"
+          .then(() => {
+            DelARuDe({ rule_id: this.ButtonroleId }).then(res => {
+              this.$message.success("权限删除成功");
+              this.getAroList();
+              this.ButtonroleId = "";
+            });
+          })
+          .catch(() => {
+            this.$message.info("已取消删除");
           });
-        });
+      }
+    },
+    //获取当前选中的SelectRole
+    SelectRole(tagid, pindex, index) {
+      this.showPerims = pindex;
+      this.ButtonroleId = tagid;
     },
     //判断当前选择是iCON方式
     SelectICON(value) {
@@ -185,6 +274,44 @@ export default {
     UpReady(file, fileList) {},
     //上传的Image移除方法
     RemoveImage(file) {},
+    //权限添加
+    Primsmannage() {
+      this.$refs["Createpermisform"].validate(valid => {
+        if (valid) {
+          let icon = this.Createpermisform.ICON.join(",");
+          let params = {
+              pid: this.Createpermisform.Plevel,
+              conname: this.Createpermisform.name,
+              route: this.Createpermisform.path,
+              dis: this.Createpermisform.showtype,
+              icon: icon,
+              img: this.fileList[0].url,
+              font: this.selecticonclass,
+              remark: this.Createpermisform.note,
+              sort: this.Createpermisform.sort
+          };
+          if (this.Pretitle == "创建权限") {
+            AddARuCrLi(params).then(res => {
+              this.$message.success("权限增加成功");
+              this.dialogCreatepermis = false;
+              this.getAroList();
+              this.resetpermis("Createpermisform");
+            });
+          } else {
+            params.rule_id=this.ButtonroleId;
+            EditARuCrUp(params).then(res => {
+              this.$message.success("权限编辑成功");
+              this.dialogCreatepermis = false;
+              this.getAroList();
+              this.resetpermis("Createpermisform");
+            });
+          }
+        } else {
+          this.$message.error("权限页面验证失败");
+          return false;
+        }
+      });
+    },
     //重置表单
     resetpermis(formName) {
       this.$refs[formName].resetFields();
@@ -212,41 +339,26 @@ export default {
     border-radius: 4px;
     overflow-y: scroll;
     .psghead {
-      padding: 10px 0;
+      line-height: 40px;
       .mark {
         font-size: 16px;
         font-weight: bold;
         color: #333333;
+      }
+      button {
         i {
-          font-weight: bold;
+          margin-right: 5px;
         }
       }
     }
     .psbody {
       margin-top: 15px;
-      .el-card {
-        margin-bottom: 20px;
-        & .el-card.is-always-shadow {
-          -webkit-box-shadow: none;
-          box-shadow: none;
-        }
-        .el-card__header {
-          padding: 15px;
-          background: #fafafa;
-        }
+      button {
+        border: none;
       }
-      .regicon {
-        i {
-          // font-weight: bold;
-          font-size: 16px;
-          cursor: pointer;
-        }
-        & i:first-child {
-          margin-right: 10px;
-        }
-      }
-      .el-tag + .el-tag {
-        margin-left: 10px;
+      button.Sbtn {
+        background: #409eff;
+        color: #fff;
       }
     }
   }
@@ -255,7 +367,7 @@ export default {
     height: 80%;
     overflow: auto;
     .permisform {
-      width: 490px;
+      width: 500px;
       margin: 0 auto;
       .el-form-item__label {
         color: #666666;

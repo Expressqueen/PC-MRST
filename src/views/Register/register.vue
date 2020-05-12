@@ -2,6 +2,7 @@
   <div class="Register">
     <div class="regpage clearfix">
       <div class="regtitle clearfix">
+        <!-- <img :src="avturl" /> -->
         <el-avatar :size="32" :src="avturl" class="left"></el-avatar>
         <p class="left">
           <span>{{inviter}}</span>邀请你加入
@@ -80,15 +81,7 @@ export default {
         setpassword: "",
         confpassword: "",
         deptname:"",
-        // deptnameid:"",
         departlist:{
-          // depname:"研发部",
-          // id:16,
-          // child:[
-          //   {id: 17, depname: "后端", child: Array(0)},
-          //   {id: 18, depname: "前端", child: Array(0)},
-          //   {id: 19, depname: "UI", child: Array(0)},
-          // ]
         },
       },
       RegisRule: {
@@ -107,18 +100,11 @@ export default {
       Invi:this.$route.query.Invi
     }
     getARegi(params).then(res=>{
-      if(res.data.code==0){
-        var revicedata=res.data.data;
-        this.inviter=revicedata.nickname;
-        this.avturl=revicedata.img;
-        this.nick_id=revicedata.nick_id;
-        this.Regisform.departlist=revicedata.dep_list
-      }else{
-        this.$message({
-          type:'warning',
-          message:res.data.msg
-        })
-      }
+      var revicedata=res.data.data;
+      this.inviter=revicedata.nickname;
+      this.avturl=revicedata.img;
+      this.nick_id=revicedata.nick_id;
+      this.Regisform.departlist=revicedata.dep_list
     })
   },
   methods: {

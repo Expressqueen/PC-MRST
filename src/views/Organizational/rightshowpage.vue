@@ -197,12 +197,10 @@ export default {
       if(this.Cselectindex==null){
         selectdepid=this.rightmenulist[this.parentindex].id
       }else{
-        selectdepid=this.rightmenulist[this.parentindex].child[this.Cselectindex].pid;
+        selectdepid=this.rightmenulist[this.parentindex].child[this.Cselectindex].id;
       }
       return selectdepid;
     },
-    //根据id获取角色列表
-
     //显示列表权限修改
     Setrole(command){
       let params={

@@ -75,6 +75,7 @@ import {
   SAJuDeps,
   AJuDepC,
   getAJuDepC,
+  EditAJuDepCUp,
   DeleteAJuDepC
 } from "@/api/index";
 export default {
@@ -89,7 +90,8 @@ export default {
       Departmenttitle: "创建部门",
       righttitle: "第一事业部",
       departlist: [],
-      AddDepart: {   //创建部门字段
+      AddDepart: {
+        //创建部门字段
         name: "",
         role: [],
         roleval: ""
@@ -105,7 +107,7 @@ export default {
         isMembers: true,
         searchres: true
       },
-      childselectid:null,//二级组织架构选中的id
+      childselectid: null //二级组织架构选中的id
     };
   },
   mounted() {
@@ -146,20 +148,22 @@ export default {
         dep_id: id,
         nickname: name
       };
-      SAJuDeps(params).then(res => {
-        this.childlist.searchres=true;
-        if (name != undefined) {
-          this.childlist.isMembers = false;
-          this.$refs["rightshowpage"].showselecttitle =
-            "相关成员（" + res.data.data.length + "）";
-          if (res.data.data.length < 1) {
-            this.childlist.searchres = false;
+      SAJuDeps(params)
+        .then(res => {
+          this.childlist.searchres = true;
+          if (name != undefined) {
+            this.childlist.isMembers = false;
+            this.$refs["rightshowpage"].showselecttitle =
+              "相关成员（" + res.data.data.length + "）";
+            if (res.data.data.length < 1) {
+              this.childlist.searchres = false;
+            }
           }
-        }
-        this.$refs["rightshowpage"].restableData = res.data.data;
-      }).catch(err=>{
-        this.childlist.searchres = false;
-      });
+          this.$refs["rightshowpage"].restableData = res.data.data;
+        })
+        .catch(err => {
+          this.childlist.searchres = false;
+        });
     },
     //菜单切换更改右侧部门菜单和数据
     selectedbar(obj, index) {
@@ -177,25 +181,25 @@ export default {
       this.collas = !this.collas;
     },
     //组织部门操作
-    Department(commond,depid) {
-      debugger
+    Department(commond, depid) {
+      debugger;
       //this.$refs['AddDepart'].resetFields();
-      if(typeof(depid)=="number")
-      this.childselectid=depid;
-      else this.childselectid=0;
+      if (typeof depid == "number") this.childselectid = depid;
+      else this.childselectid = 0;
+      //获取部门角色列表
+      getAJuDepC({ dep_id: this.childselectid }).then(res => {
+          this.AddDepart.role = res.data.data;
+      });
       if (commond == "Add") {
         this.AddDepartment = true;
         this.Departmenttitle = "创建部门";
-        //获取角色列表
-        getAJuDepC({dep_id:this.childselectid}).then(res => {
-          this.AddDepart.role = res.data.data;
-        });
       } else if (commond == "Edit") {
+        this.AddDepartment = true;
         this.Departmenttitle = "编辑部门";
         let selectdept = this.departlist[this.copycurrent];
         this.AddDepart.name = selectdept.depname;
-        this.AddDepart.roleval = "超级管理员";
-        this.AddDepartment = true;
+        this.AddDepart.roleval = selectdept.role_id;
+        
       } else if (commond == "Del") {
         this.$confirm("此操作将永久删除该部门, 是否继续?", "提示", {
           confirmButtonText: "确定",
@@ -203,23 +207,25 @@ export default {
           type: "warning"
         })
           .then(() => {
-            debugger
-            let selectdepid=this.setdata.FirstList[this.copycurrent].id;
-            if(typeof(depid)=="number"){
-                selectdepid=depid;
+            let selectdepid = this.setdata.FirstList[this.copycurrent].id;
+            if (typeof depid == "number") {
+              selectdepid = depid;
             }
-            let params={
-              dep_id:selectdepid
-            }
-            DeleteAJuDepC(params).then(res=>{
+            let params = {
+              dep_id: selectdepid
+            };
+            DeleteAJuDepC(params).then(res => {
               this.departlist.splice(this.copycurrent, 1);
               this.getAJuDeps();
-              Object.assign(this.$refs["rightshowpage"].$data, this.$refs["rightshowpage"].$options.data());
+              Object.assign(
+                this.$refs["rightshowpage"].$data,
+                this.$refs["rightshowpage"].$options.data()
+              );
               this.$message({
                 type: "success",
                 message: "删除成功!"
               });
-            })
+            });
           })
           .catch(() => {
             this.$message({
@@ -231,28 +237,43 @@ export default {
     },
     //部门操作
     AddAddDepartment(formName) {
-      debugger
       var _this = this;
       this.$refs[formName].validate(valid => {
         if (valid) {
           if (_this.Departmenttitle == "创建部门") {
             var params = {
-              dep_id:_this.childselectid,
-              depname:_this.AddDepart.name,
-              role_id:_this.AddDepart.roleval
+              dep_id: _this.childselectid,
+              depname: _this.AddDepart.name,
+              role_id: _this.AddDepart.roleval
             };
             //创建部门
             AJuDepC(params).then(res => {
               this.getAJuDeps();
-              this.AddDepartment=false;
-              this.$refs['AddDepart'].resetFields();
+              this.AddDepartment = false;
+              this.$refs["AddDepart"].resetFields();
             });
           } else if (_this.Departmenttitle == "编辑部门") {
-            let selectdept = _this.departlist[_this.copycurrent];
-            selectdept.depname = _this.AddDepart.name;
-            selectdept.id = _this.AddDepart.value;
+            debugger
+            let selectdepid = this.setdata.FirstList[this.copycurrent].id;
+            if (typeof depid == "number") {
+              selectdepid = depid;
+            }
+            var params = {
+              dep_id: selectdepid,
+              depname: _this.AddDepart.name,
+              role_id: _this.AddDepart.roleval
+            };
+            EditAJuDepCUp(params).then(res => {
+              debugger;
+              this.getAJuDeps();
+              this.AddDepartment = false;
+              this.$refs["AddDepart"].resetFields();
+            });
+
+            // let selectdept = _this.departlist[_this.copycurrent];
+            // selectdept.depname = _this.AddDepart.name;
+            // selectdept.id = _this.AddDepart.value;
           }
-          
         } else {
           this.$message.error("请输入必填项!");
           return false;

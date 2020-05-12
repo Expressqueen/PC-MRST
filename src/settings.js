@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '百灵二代',
+  title: '乐播新瑞(北京)文化传媒有限公司',
 
   /**
    * @type {boolean} true | false

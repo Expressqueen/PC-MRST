@@ -60,6 +60,18 @@ const router=new Router({
         meta: { title: '权限'}
       }]
     },
+    //集团
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/BlocGroup',
+      children: [{
+        path: 'BlocGroup',
+        name: 'BlocGroup',
+        component: () => import('@/views/BlocGroup/index'),
+        meta: { title: '集团'}
+      }]
+    },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
   ]

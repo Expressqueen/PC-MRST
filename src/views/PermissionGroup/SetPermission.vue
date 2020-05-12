@@ -59,7 +59,7 @@
   </div>
 </template>
 <script>
-import { ARoRuLi, PostARoRuLi, EditAJuRuLiUp } from "@/api/index";
+import { ARoRuLi, PostARoRuLi, EditAJuRuLiUp,DelAroRuDel } from "@/api/index";
 export default {
   name: "setpermission",
   data() {
@@ -131,11 +131,14 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
-          this.Setpresion = false;
+          DelAroRuDel({role_id:this.selectPid}).then(res=>{
+            this.$message({
+              type: "success",
+              message: "删除成功!"
+            });
+            this.Setpresion = false;
+            this.$parent.getRolelist();
+          })
         })
         .catch(() => {
           this.$message({
@@ -173,6 +176,7 @@ export default {
             type: "success",
             message: "权限设置成功!"
           });
+          this.$parent.getRolelist();
         });
       }
     }

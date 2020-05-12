@@ -1,17 +1,13 @@
 <template>
   <div class="headbar clearfix">
     <div class="layoutbar left">
-      <i class="el-icon-menu left" @click="drawer=true" style="cursor:pointer"></i>
+      <i class="el-icon-menu left" @click="openlayout" style="cursor:pointer"></i>
       <Breadcrumb></Breadcrumb>
     </div>
     <div class="loginuser right">
       <el-avatar :size="40" :src="circleUrl"></el-avatar>
     </div>
-    <el-drawer
-    :visible.sync="drawer"
-    direction="ltr" :modal="false" size="280px" :withHeader="false">
-        <LayoutMenu></LayoutMenu>
-    </el-drawer>
+    <LayoutMenu ref="Layoutmenu"></LayoutMenu>
   </div>
 </template>
 <script>
@@ -24,15 +20,19 @@ export default {
     return {
       circleUrl:
         "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
-        drawer:false
     };
   },
   watch:{
     //监听路由发生变化关闭左侧菜单栏
     $route:{
       handler:function(val,olval){
-        this.drawer=false;
+        this.$refs['Layoutmenu'].showtype=false;
       }
+    }
+  },
+  methods:{
+    openlayout(){
+      this.$refs['Layoutmenu'].showtype=true;
     }
   }
 };
