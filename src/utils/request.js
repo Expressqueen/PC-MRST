@@ -3,6 +3,7 @@ import QS from 'qs'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import { Config } from 'svgo'
 
 
 //注册axios
@@ -21,6 +22,8 @@ else if (process.env.NODE_ENV == 'production') {
   service.defaults.baseURL = 'https://www.production.com';
 }
 //post请求头的设置
+// service.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+service.defaults.emulateJSON=true;
 service.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 // 请求拦截
 service.interceptors.request.use(
@@ -138,6 +141,21 @@ export const post = (url, params, config = {}) => {
       url,
       params,
       ...config
+    }).then(response => {
+      resolve(response)
+    }).catch(error => {
+      reject(error)
+    })
+  })
+}
+
+/**delete请求 */
+export const Delete=(url,params)=>{
+  return new Promise((resolve, reject) => {
+    service({
+      method: 'delete',
+      url,
+      params
     }).then(response => {
       resolve(response)
     }).catch(error => {

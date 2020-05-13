@@ -10,7 +10,7 @@
           class="Searchinput"
         ></el-input>
         <el-row class="right">
-          <el-button type="primary" class="blue">
+          <el-button type="primary" class="blue" @click="createFormat">
             <i class="el-icon-circle-plus-outline"></i>
             创建业态
           </el-button>
@@ -21,7 +21,7 @@
         </el-row>
       </div>
       <ul class="showGrouplist">
-        <li v-for="(item,index) in BlocGrouplist" :key="index">
+        <li v-for="(item,index) in BlocGrouplist" :key="index" @click="openProduct(item.id)">
           <!-- <span>{{item.cy_img}}</span> -->
           <span>
             <img
@@ -30,7 +30,7 @@
           </span>
           <span>{{item.cy_name}}</span>
           <span>{{item.create_time}}</span>
-          <span>
+          <span @click.stop="SetGroup(item)">
             <i class="el-icon-s-tools"></i>
           </span>
         </li>
@@ -39,21 +39,29 @@
         background
         layout="prev, pager, next"
         :total="totalpage"
+        :page-size="8"
         :current-page.sync="currentPage"
         @current-change="CurrentChange"
         align="center"
         style="margin-top:50px"
       ></el-pagination>
     </div>
-    <AddBlocGroup ref="BlocTarget"></AddBlocGroup>
+    <!-- 创建集团 -->
+    <AddBlocGroup ref="BlocTarget"></AddBlocGroup> 
+    <!-- 设置集团 -->
+    <SetBlocGroup ref="SetBlocgroup"></SetBlocGroup>
+    <!-- 创建业态 -->
+    <CreateFormat ref="createTarget"></CreateFormat>
   </div>
 </template>
 <script>
 import AddBlocGroup from '@/views/BlocGroup/AddBlocGroup'
-import { BlocList } from "@/api/index";
+import SetBlocGroup from '@/views/BlocGroup/SetBlocGroup'
+import CreateFormat from '@/views/BlocGroup/CreateFormat'
+import { BlocList,BlocInfo } from "@/api/index";
 export default {
   name: "BlocGroup",
-  components:{AddBlocGroup},
+  components:{AddBlocGroup,SetBlocGroup,CreateFormat},
   data() {
     return {
       SearchBloc: "",
@@ -61,6 +69,9 @@ export default {
       currentPage: 1,
       totalpage: 0
     };
+  },
+  watch:{
+
   },
   mounted() {
       this.getBlocList(1);
@@ -73,7 +84,7 @@ export default {
         pagesize: 8,
         name: "",
         field: "",
-        order: 1
+        order: 0
       };
       //获取集团列表数据
       BlocList(params).then(res => {
@@ -88,24 +99,55 @@ export default {
     //创建集团
     CreateGroup(){
         this.$refs['BlocTarget'].Addblocdialog=true;
-    }   
+    },  
+    //设置集团
+    SetGroup(item){
+      this.$refs['SetBlocgroup'].SetBlocdialog=true;
+      this.$refs['SetBlocgroup'].GroupId=item.id;
+      this.GetBlocInfo(item.id);
+    },
+    //集团详情
+    GetBlocInfo(itemId){
+      BlocInfo({id:itemId}).then(res=>{
+        /**赋值基本信息 */
+        // this.$refs['SetBlocgroup'].Basicinfo.grouplogourl=res.data.data.cy_img;
+        this.$refs['SetBlocgroup'].Basicinfo.Groupname=res.data.data.cy_name;
+        this.$refs['SetBlocgroup'].Basicinfo.contact=res.data.data.person;
+        this.$refs['SetBlocgroup'].Basicinfo.contactpone=res.data.data.cy_phone;
+        this.$refs['SetBlocgroup'].Basicinfo.note=res.data.data.intro;
+      })
+    },
+     //创建业态
+    createFormat(){
+      this.$refs['createTarget'].dialogFormVisible=true;
+    },  
+    //打开产品列表
+    openProduct(id){
+      this.$router.push({
+        name: 'ProductGroup',
+        params: {
+            id: id
+        }
+      });
+      // this.$router.go(0);
+    }
   }
 };
 </script>
-<style lang="scss" scope>
-#app {
-  height: auto;
-  min-height: 100vh;
-  .headbar {
-    position: fixed;
-    z-index: 222;
-  }
-}
+<style lang="scss">
+// #app {
+//   height: auto;
+//   min-height: 100vh;
+//   .headbar {
+//     position: fixed;
+//     z-index: 222;
+//   }
+// }
 .BlocGroup {
   width: 960px;
   margin: 0 auto;
   min-height: calc(100% - 110px);
-  padding: 100px 0 40px 0;
+  padding: 40px 0;
   header {
     font-size: 16px;
     font-weight: bold;

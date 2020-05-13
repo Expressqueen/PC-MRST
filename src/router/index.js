@@ -72,6 +72,19 @@ const router=new Router({
         meta: { title: '集团'}
       }]
     },
+    //集团业态产品
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/ProductGroup',
+      children: [{
+        path: 'ProductGroup',
+        name: 'ProductGroup',
+        component: () => import('@/views/ProductGroup/index'),
+        meta: { title: '集团业态产品'}
+      }],
+      hidden:true
+    },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
   ]
