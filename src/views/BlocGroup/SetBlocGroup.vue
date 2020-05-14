@@ -5,9 +5,10 @@
     width="960px"
     :close-on-click-modal="false"
     class="setblocgroup"
+    @close='closeSetBloc'
   >
-    <el-tabs tab-position="left" style="height: 100%;">
-      <el-tab-pane label="基础信息">
+    <el-tabs tab-position="left" style="height: 100%;" v-model="activeName">
+      <el-tab-pane label="基础信息" name="Basicinfo">
         <el-form
           :model="Basicinfo"
           label-position="right"
@@ -16,7 +17,7 @@
           ref="Basicinfo"
           :rules="Basicinforule"
         >
-          <el-form-item label="集团logo" prop="grouplogourl">
+          <el-form-item label="集团logo" prop="cy_img">
             <el-upload
               class="avatar-uploader"
               action="https://jsonplaceholder.typicode.com/posts/"
@@ -25,21 +26,21 @@
               :before-upload="beforeAvatarUpload"
               v-loading="loading"
             >
-              <img v-if="Basicinfo.grouplogourl" :src="Basicinfo.grouplogourl" class="avatar" />
+              <img v-if="Basicinfo.cy_img" :src="Basicinfo.cy_img" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
           </el-form-item>
-          <el-form-item label="集团名称" prop="Groupname">
-            <el-input v-model="Basicinfo.Groupname" autocomplete="off" placeholder="集团名称"></el-input>
+          <el-form-item label="集团名称" prop="cy_name">
+            <el-input v-model="Basicinfo.cy_name" autocomplete="off" placeholder="集团名称"></el-input>
           </el-form-item>
-          <el-form-item label="联系人" prop="contact">
-            <el-input v-model="Basicinfo.contact" autocomplete="off" placeholder="请输入联系人"></el-input>
+          <el-form-item label="联系人" prop="person">
+            <el-input v-model="Basicinfo.person" autocomplete="off" placeholder="请输入联系人"></el-input>
           </el-form-item>
-          <el-form-item label="联系电话" prop="contactpone">
-            <el-input v-model="Basicinfo.contactpone" autocomplete="off" placeholder="请输入联系电话"></el-input>
+          <el-form-item label="联系电话" prop="cy_phone">
+            <el-input v-model="Basicinfo.cy_phone" autocomplete="off" placeholder="请输入联系电话"></el-input>
           </el-form-item>
-          <el-form-item label="备注" prop="note">
-            <el-input v-model="Basicinfo.note" autocomplete="off" placeholder="请输入备注"></el-input>
+          <el-form-item label="备注" prop="intro">
+            <el-input v-model="Basicinfo.intro" autocomplete="off" placeholder="请输入备注"></el-input>
           </el-form-item>
           <el-form-item label>
             <el-button type="primary" @click="SaveBasicInfo">保存</el-button>
@@ -47,7 +48,7 @@
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane label="重要信息">
+      <el-tab-pane label="重要信息" name="Imporinfo">
         <el-form
           :model="ImpotantInfo"
           label-position="right"
@@ -92,14 +93,14 @@
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane label="集团操作">
+      <el-tab-pane label="集团操作" name="Blocreg">
           <el-form label-position="right" label-width="100px" class="permisform" style="width:580px">
               <el-form-item>
                   <p slot="label"><span class="mark">*</span> 集团操作</p>
                 一旦将集团移到回收站，所有与集团有关的信息将会被移到回收站，其中的内容也不会被统计和搜索收录，需要去回收站恢复后才能继续使用。
               </el-form-item>
               <el-form-item label="">
-                  <el-button type="danger" plain @click="SaveBasicInfo">删除集团</el-button>
+                  <el-button type="danger" plain @click="DelHode">删除集团</el-button>
                   <el-button type="warning" plain @click="PageHode">归档</el-button>
               </el-form-item>
           </el-form>
@@ -108,7 +109,7 @@
   </el-dialog>
 </template>
 <script>
-import { FormatList,pagehole,EditBlocBase,EditBlocImpor } from "@/api/index";
+import { FormatList,pagehole,EditBlocBase,EditBlocImpor,BlocInfo,DelBloc } from "@/api/index";
 export default {
   data() {
     let validformats = (rule, value, callback) => {
@@ -121,19 +122,15 @@ export default {
     return {
       SetBlocdialog: false,
       GroupId:"",
+      activeName:"Basicinfo", //记录当前tab默认选中那个标签
+      Resetform:{}, //记录当前选中form，重置时使用
       Basicinfo: {
-        grouplogourl:
-          "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-        Groupname: "",
-        contact: "",
-        contactpone: "",
-        note: ""
       },
       Basicinforule: {
-        grouplogourl: [
-          { required: true, message: "请上传集团logo", trigger: "blur" }
-        ],
-        Groupname: [
+        // cy_img: [
+        //   { required: true, message: "请上传集团logo", trigger: "blur" }
+        // ],
+        cy_name: [
           { required: true, message: "请输入集团名称", trigger: "blur" }
         ]
       },
@@ -154,6 +151,12 @@ export default {
     });
   },
   methods: {
+    //页面初始化选中的业态
+    Initformats(){
+      const newArr = JSON.parse(JSON.stringify(this.ImpotantInfo.formats));
+      this.selectformatlist = newArr;
+      this.FormatsIselect();
+    },
     /**基础信息操作 */
     handleAvatarSuccess(res, file) {
       this.Basicinfo.grouplogourl = URL.createObjectURL(file.raw);
@@ -167,12 +170,12 @@ export default {
       this.$refs["Basicinfo"].validate(valid => {
         if (valid) {
             let params={
-                id:this.GroupId,
-                name:this.Basicinfo.Groupname,
+                id:this.Basicinfo.id,
+                name:this.Basicinfo.cy_name,
                 // img:"",
-                person:this.Basicinfo.contact,
-                phone:this.Basicinfo.contactpone,
-                intro:this.Basicinfo.note
+                person:this.Basicinfo.person,
+                phone:this.Basicinfo.cy_phone,
+                intro:this.Basicinfo.intro
             }
             EditBlocBase(params).then(res=>{
                 this.$message.success("基本信息保存成功!");
@@ -186,12 +189,16 @@ export default {
     //重置基本信息
     Restform(formName) {
       this.$refs[formName].resetFields();
-      if (formName == "ImpotantInfo") {
-        this.ImpotantInfo.formatsList.forEach(ele => {
-          ele.selectli = false;
-        });
+      if(formName == "Basicinfo"){
+        this.Basicinfo=JSON.parse(JSON.stringify(this.Resetform));
       }
+      else if (formName == "ImpotantInfo") {
+        this.ImpotantInfo.formats=JSON.parse(JSON.stringify(this.Resetform)).instates;
+        this.Initformats();
+      }
+      this.$message.success("已重置为当前默认信息!")
     },
+    
     /**重要信息操作 */
     //选择业态/集团运营部门
     Selectformat(item, datalist) {
@@ -201,8 +208,7 @@ export default {
     },
     //判断点击选中后增加到业态选中
     getChecklist(item, type) {
-      if (type == "formats") {
-        if (
+      if (
           JSON.stringify(this.selectformatlist).indexOf(
             JSON.stringify(item.name)
           ) === -1
@@ -213,19 +219,6 @@ export default {
             t => t.id != item.id
           );
         }
-      } else if ((type = "Group")) {
-        if (
-          JSON.stringify(this.selectGrouplist).indexOf(
-            JSON.stringify(item.name)
-          ) === -1
-        ) {
-          this.selectGrouplist.push(item);
-        } else {
-          this.selectGrouplist = this.selectGrouplist.filter(
-            t => t.name != item.name
-          );
-        }
-      }
     },
     //点击确定将选择的业态加入展示框中
     showformat() {
@@ -253,7 +246,12 @@ export default {
               this.ImpotantInfo.formats.filter(item => (item.selectli = true))
             )
           );
-          this.ImpotantInfo.formatsList.forEach(elem => {
+          this.FormatsIselect();
+        });
+    },
+    //获取下拉列表选中设置为true,未选中为false
+    FormatsIselect(){
+      this.ImpotantInfo.formatsList.forEach(elem => {
             elem.selectli = true;
           });
           //当前当前所有数据和已经选择的数据的差集
@@ -265,7 +263,6 @@ export default {
             elem.selectli = false;
           });
           this.$forceUpdate();
-        });
     },
     //取消选择的业态
     cancleformat() {
@@ -301,7 +298,7 @@ export default {
         if (valid) {
             let instate=this.ImpotantInfo.formats.map(item=>{return item.id});
             let params={
-                id:this.GroupId,
+                id:this.Basicinfo.id,
                 instate:instate
             }
             EditBlocImpor(params).then(res=>{
@@ -316,9 +313,37 @@ export default {
     /**集团操作 */
     //归档
     PageHode(){
-        pagehole({id:this.GroupId}).then(res=>{
-            this.$message.success("集团归档成功!")
+        pagehole({id:this.Basicinfo.id}).then(res=>{
+          this.SetBlocdialog=false;
+          this.$parent.getBlocList(1);
+          this.$message.success("集团归档成功!")
         })
+    },
+    //删除集团
+    DelHode(){
+      this.$confirm("是否删除当前集团?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      })
+        .then(() => {
+          DelBloc({id:this.Basicinfo.id}).then(res=>{
+            this.SetBlocdialog=false;
+            this.$parent.getBlocList(1);
+            this.$message.success("集团归档成功!");
+          });
+        })
+        .catch(() => {
+          this.$message.info("您已取消删除当前集团!");
+        });
+    },
+    //关闭弹出层清空所有表单信息
+    closeSetBloc(){
+      this.$refs['Basicinfo'].resetFields();
+      this.$refs['ImpotantInfo'].resetFields();
+      this.activeName="Basicinfo";
+      this.$parent.getBlocList(1);
     }
   }
 };

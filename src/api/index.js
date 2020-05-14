@@ -31,6 +31,7 @@ export const BlocInfo=(params)=>get('/CyInfo',params) //集团详情
 export const EditBlocBase=(params)=>post('/CyBase',params) //修改集团基本信息
 export const EditBlocImpor=(params)=>post('/CyImpor',params) //修改集团重要信息
 export const pagehole=(params)=>get('/CyKeep',params) //归档集团
+export const DelBloc=(params)=>get('/CyDel',params)   //删除集团
 /**业态接口 */
 export const FormatList=(params)=>get('/InState',params) //获取业态列表
 /**产品接口 */

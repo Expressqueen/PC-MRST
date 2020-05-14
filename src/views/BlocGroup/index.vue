@@ -103,18 +103,21 @@ export default {
     //设置集团
     SetGroup(item){
       this.$refs['SetBlocgroup'].SetBlocdialog=true;
-      this.$refs['SetBlocgroup'].GroupId=item.id;
-      this.GetBlocInfo(item.id);
+      // this.$refs['SetBlocgroup'].GroupId=item.id;
+      this.$nextTick(function () {
+        this.GetBlocInfo(item.id);
+      })
+      
     },
     //集团详情
     GetBlocInfo(itemId){
       BlocInfo({id:itemId}).then(res=>{
+        this.$refs['SetBlocgroup'].Resetform=JSON.parse(JSON.stringify(res.data.data));
         /**赋值基本信息 */
-        // this.$refs['SetBlocgroup'].Basicinfo.grouplogourl=res.data.data.cy_img;
-        this.$refs['SetBlocgroup'].Basicinfo.Groupname=res.data.data.cy_name;
-        this.$refs['SetBlocgroup'].Basicinfo.contact=res.data.data.person;
-        this.$refs['SetBlocgroup'].Basicinfo.contactpone=res.data.data.cy_phone;
-        this.$refs['SetBlocgroup'].Basicinfo.note=res.data.data.intro;
+        this.$refs['SetBlocgroup'].Basicinfo=JSON.parse(JSON.stringify(res.data.data));
+        //赋值选中的业态
+        this.$refs['SetBlocgroup'].ImpotantInfo.formats=JSON.parse(JSON.stringify(res.data.data)).instates;
+        this.$refs['SetBlocgroup'].Initformats()
       })
     },
      //创建业态
@@ -125,7 +128,7 @@ export default {
     openProduct(id){
       this.$router.push({
         name: 'ProductGroup',
-        params: {
+        query: {
             id: id
         }
       });

@@ -39,7 +39,7 @@
                 <ul class="el-scrollbar__view el-select-dropdown__list">
                     <li v-for="(item,index) in createBloc.formatsList" :key="index" 
                     :class="[{selected:item.selectli},'el-select-dropdown__item']"
-                    @click="Selectformat(item,'formats')">
+                    @click="Selectformat(item)">
                         {{item.name}}
                         <i class="el-icon-check right" v-show="item.selectli"></i>
                     </li>
@@ -54,34 +54,7 @@
                 v-for="tag in createBloc.formats"
                 :key="tag.id"
                 closable
-                size="mini">
-                {{tag.name}}
-                </el-tag>
-                <i slot="suffix" class="el-icon-arrow-down right"></i>
-            </div>
-        </el-popover>
-      </el-form-item>
-      <el-form-item label="集团运营部门" prop="Groupdivison">
-        <el-popover placement="bottom-start" width="390" trigger="click" :ref="`popover1`">
-            <div class="droplist">
-                <ul class="el-scrollbar__view el-select-dropdown__list">
-                    <li v-for="(item,index) in createBloc.GroupdivisonList" :key="index" 
-                    :class="[{selected:item.selectli},'el-select-dropdown__item']"
-                    @click="Selectformat(item,'Group')">
-                        {{item.name}}
-                        <i class="el-icon-check right" v-show="item.selectli"></i>
-                    </li>
-                </ul>
-                <el-row style="padding:0 10px;text-align:right">
-                    <el-button type="primary" size="small" @click="showgroup">确定</el-button>
-                    <el-button size="small" @click="canclegroup">取消</el-button>
-                </el-row>
-            </div>
-            <div slot="reference" class="likeinput clearfix">
-                <el-tag
-                v-for="tag in createBloc.Groupdivison"
-                :key="tag.id"
-                closable
+                @close="Closetag(tag)"
                 size="mini">
                 {{tag.name}}
                 </el-tag>
@@ -123,16 +96,7 @@ export default {
         contactpone: "",
         note: "",
         formats: [],
-        formatsList: [],
-        Groupdivison: [],
-        GroupdivisonList: [
-          {
-            name:"第一事业部",id:"1"
-          },
-          {
-            name:"第二事业部",id:"2"
-          }
-        ]
+        formatsList: []
       },
       Blocformrule: {
         // grouplogourl: [
@@ -144,13 +108,9 @@ export default {
         formats: [
           { validator: validformats, trigger: "blur",required: true }
         ]
-        // Groupdivison:[
-        //   { validator:validGroup, required: true,trigger: 'blur' }
-        // ]
       },
       loading: false,
-      selectformatlist:[],
-      selectGrouplist:[]
+      selectformatlist:[]
     };
   },
   mounted() {
@@ -177,27 +137,18 @@ export default {
       // return isJPG && isLt2M;
     },
     //选择业态/集团运营部门
-    Selectformat(item,datalist){
+    Selectformat(item){
         item.selectli=!item.selectli;
         this.$forceUpdate();
-        this.getChecklist(item,datalist);
+        this.getChecklist(item);
     },
     //判断点击选中后增加到业态选中
-    getChecklist(item,type){
-      if(type=="formats"){
-        if(JSON.stringify(this.selectformatlist).indexOf(JSON.stringify(item.name)) === -1){
-            this.selectformatlist.push(item);
-        }else{
-            this.selectformatlist=this.selectformatlist.filter(t=>t.id!=item.id);
-        }
-      }else if(type="Group"){
-        if(JSON.stringify(this.selectGrouplist).indexOf(JSON.stringify(item.name)) === -1){
-            this.selectGrouplist.push(item);
-        }else{
-            this.selectGrouplist=this.selectGrouplist.filter(t=>t.name!=item.name);
-        }
+    getChecklist(item){
+      if(JSON.stringify(this.selectformatlist).indexOf(JSON.stringify(item.name)) === -1){
+        this.selectformatlist.push(item);
+      }else{
+        this.selectformatlist=this.selectformatlist.filter(t=>t.id!=item.id);
       }
-        
     },
     //点击确定将选择的业态加入展示框中
     showformat(){
@@ -257,65 +208,26 @@ export default {
           });
         });
     },
-    //选择集团运营部门
-    showgroup(){
-      this.$confirm('是否确定选择这些运营部门?', '提示', {
+    //取消tags业态选中
+    Closetag(item){
+      this.$confirm('是否取消选择当前业态?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
           center: true
-        }).then(() => {
-          const newArr=JSON.parse(JSON.stringify(this.selectGrouplist));
-          this.createBloc.Groupdivison=newArr;
-          this.$message({
-            type: 'success',
-            message: '选择运营部门成功!'
-          });
-          this.$refs[`popover`].doClose();
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消修改选择业态'
-          });
-          //获取当前文本框已有数据赋值给下拉数据
-          this.selectGrouplist=JSON.parse(JSON.stringify(this.createBloc.Groupdivison.filter(item=>item.selectli=true)));
-          this.createBloc.GroupdivisonList.forEach(elem=>{
-            elem.selectli=true;
-          })
-          //当前当前所有数据和已经选择的数据的差集
-          let removelist=[...this.createBloc.GroupdivisonList].filter(item=>[...this.selectGrouplist].every(elem=>elem.id!==item.id));
-          //给当前下拉选中但是取消选中的选中状态设为false
-          removelist.forEach(elem=>{
-            elem.selectli=false;
-          })
-          this.$forceUpdate();
-        });
-    },
-    //取消集团运营部门选择
-    canclegroup(){
-      this.$confirm('是否取消选择这些集团运营部门?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          center: true
-        }).then(() => {
-            this.createBloc.Groupdivison=[];
-            this.selectGrouplist=[];
-            this.createBloc.GroupdivisonList.forEach(ele=>{
-                ele.selectli=null;
-            })
-            this.$forceUpdate();
-          this.$message({
-            type: 'success',
-            message: '已取消业态选择!'
-          });
-          this.$refs[`popover`].doClose();
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消修改选择业态'
-          });
-        });
+      }).then(()=>{
+        this.createBloc.formats.splice(this.createBloc.formats.indexOf(item),1);
+        this.selectformatlist=JSON.parse(JSON.stringify(this.createBloc.formats));
+        //当前当前所有数据和已经选择的数据的差集
+        let removelist=[...this.createBloc.formatsList].filter(item=>[...this.selectformatlist].every(elem=>elem.id!==item.id));
+        //给当前下拉选中但是取消选中的选中状态设为false
+        removelist.forEach(elem=>{
+          elem.selectli=false;
+        })
+        this.$message.success("已取消选择"+item.name);
+      }).catch(()=>{
+        this.$message.info("您已取消删除当前选择业态!");
+      })
     },
     //创建集团，立即创建
     CreatGroup(){

@@ -1,49 +1,380 @@
 <template>
-    <div class="ProductGroup">
-        <p @click="goBack" class="callback">
-            <i class="el-icon-arrow-left"></i>
-            集团业态产品
-        </p>
-        <div class="Productlist clearfix">
-            <ul calss="Productmenu left">
-                <li>大卖场</li>
-                <li>标超</li>
-                <li>便利店</li>
-            </ul>
-            <div class="Productres right">
-                这是我的集团业态产品页面
-            </div>
+  <div class="ProductGroup">
+    <p class="callback">
+      <i class="el-icon-arrow-left" @click="goBack"></i>
+      集团业态产品
+    </p>
+    <div class="Productlist clearfix">
+      <ul class="Productmenu left">
+        <li
+          v-for="(item,index) in formatlist"
+          :key="index"
+          :class="{activemenu:activemenu==index}"
+          @click="TabPromenu(item.id,index)"
+        >{{item.name}}</li>
+      </ul>
+      <div class="Productres left">
+        <div class="reshead clearfix">
+          <ul class="left">
+            <li
+              name="Pruclist"
+              :class="{active:activeName=='Pruclist'}"
+              @click="ResPruList('Pruclist')"
+            >产品列表</li>
+            <li name="zone" :class="{active:activeName=='zone'}" @click="ResPruList('zone')">分区</li>
+          </ul>
+          <span class="right" v-show="activeName=='Pruclist'">
+            <i class="el-icon-s-tools"></i>业态产品设置
+          </span>
+          <span class="right" v-show="activeName=='zone'" @click="CFlevel=true">
+            <i class="el-icon-circle-plus"></i>创建一级分区
+          </span>
         </div>
+        <!-- 产品列表 -->
+        <div v-show="activeName=='Pruclist'">
+          <ul class="resprulist" v-show="goodlist.length>0">
+            <li
+              v-for="(item,index) in goodlist"
+              :key="index"
+              @mouseenter="enter(index)"
+              @mouseleave="leave()"
+            >
+              <el-image :src="item.image"></el-image>
+              <div class="mask" v-show="imgseen&&index==imgcurrent">
+                <button type="button" class="maskbutton">WebRadio</button>
+                <button type="button" class="maskbutton">{{item.intro}}</button>
+              </div>
+              <p class="title">
+                <span>{{item.name}}</span>
+                <el-dropdown trigger="click">
+                  <span class="el-dropdown-link">
+                    <i class="el-icon-more" style="transform: rotate(90deg);"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item icon="el-icon-user-solid">合同</el-dropdown-item>
+                    <el-dropdown-item icon="el-icon-s-comment">信息</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </p>
+            </li>
+          </ul>
+          <div class="NullPruc" v-show="goodlist.length<1">
+              <img src="../../assets/images/slice.png" alt="">
+              <p>暂未绑定产品</p>
+          </div>
+        </div>
+        <!-- 分区 -->
+        <div class="rezonelist" v-show="activeName=='zone'">
+          <el-table
+            :data="tableData"
+            style="width: 100%;margin-bottom: 20px;"
+            row-key="id"
+            border
+            :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+          >
+            <el-table-column prop="date" label="分区名称"></el-table-column>
+            <el-table-column prop="address" label="操作" width="320">
+                <template slot-scope="scope">
+                    <el-link type="primary" :underline="false" @click="CreateClevel(scope.row)">创建下级</el-link>
+                    <el-link type="primary" :underline="false" @click="Setlevel(scope.rowe)">设置</el-link>
+                    <el-link type="danger" :underline="false" @click="Delevel(scope.row)">删除</el-link>
+                </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
     </div>
+    <!-- 创建一级分区 -->
+    <el-dialog
+        :title="leveltitle"
+        :visible.sync="CFlevel"
+        width="420px"
+        class="createFlevel">
+        <span>分区名称</span>
+        <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="CFlevel = false">取 消</el-button>
+            <el-button type="primary" @click="CFlevel = false">确 定</el-button>
+        </span>
+    </el-dialog>
+    <!-- 设置分区 -->
+    <el-dialog
+        :title="leveltitle"
+        :visible.sync="Setlevel"
+        width="420px"
+        class="createFlevel">
+        <span>修改分区名称</span>
+        <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="CFlevel = false">取 消</el-button>
+            <el-button type="primary" @click="CFlevel = false">确 定</el-button>
+        </span>
+    </el-dialog>
+  </div>
 </template>
 <script>
+import { FormatList, GoodsList,BlocInfo } from "@/api/index";
 export default {
-    name:"ProductGroup",
-    data(){
-        return{
-
+  name: "ProductGroup",
+  data() {
+    return {
+      activeName: "zone",
+      GroupId:"",
+      src:
+        "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+      goodlist: [],
+      formatlist: [],
+      activemenu: 0,
+      imgcurrent: 0,
+      imgseen: false,
+      tableData: [
+        {
+          id: 1,
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄"
+        },
+        {
+          id: 2,
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1517 弄"
+        },
+        {
+          id: 3,
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1519 弄",
+          children: [
+            {
+              id: 31,
+              date: "2016-05-01",
+              name: "王小虎",
+              address: "上海市普陀区金沙江路 1519 弄",
+              children: [
+                {
+                  id: 39,
+                  date: "2016-05-01",
+                  name: "王小虎",
+                  address: "上海市普陀区金沙江路 1519 弄"
+                }
+              ]
+            },
+            {
+              id: 32,
+              date: "2016-05-01",
+              name: "王小虎",
+              address: "上海市普陀区金沙江路 1519 弄"
+            }
+          ]
+        },
+        {
+          id: 4,
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1516 弄"
         }
+      ],
+      CFlevel:false,
+      leveltitle:'创建一级分区',
+      Flevel:'',
+      Setlevel:false
+    };
+  },
+  mounted() {
+    this.GroupId=this.$route.query.id;
+    //获取业态列表
+    BlocInfo({id:this.GroupId}).then(res=>{
+        this.formatlist=res.data.data.instates;
+    })
+    //获取业态产品列表
+    GoodsList().then(res => {
+      this.goodlist = res.data.data;
+    });
+  },
+  methods: {
+    goBack() {
+      this.$router.back(-1);
     },
-    methods:{
-        goBack(){
-           this.$router.back(-1)
-        }
+    //业态产品切换
+    TabPromenu(id, index) {
+      this.activemenu = index;
+    },
+    //产品分区切换
+    ResPruList(name) {
+      this.activeName = name;
+    },
+    //图片鼠标移入移除功能
+    enter(index) {
+      this.imgseen = true;
+      this.imgcurrent = index;
+    },
+    leave() {
+      this.imgcurrent = false;
+      this.imgcurrent = null;
     }
-}
+  }
+};
 </script>
-<style lang="scss" scope>
-.ProductGroup{
-    width: 1200px;
-    margin: 0 auto;
-    padding: 40px 0;
-    // margin-top: 56px;
-    .callback{
-        font-weight: bold;
-        font-size: 16px;
-        i{
-            font-weight: bold;
-            margin-right: 5px;
+<style lang="scss">
+.ProductGroup {
+  width: 1420px;
+  margin: 0 auto;
+  padding: 40px 0;
+  // margin-top: 56px;
+  .callback {
+    font-weight: 400;
+    font-size: 16px;
+    i {
+      font-weight: 400;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+  }
+  .NullPruc{
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: #999999;
+    margin-top: -120px;
+    // margin-left: -120px;
+    p{
+        margin-top: 20px;
+    }
+    
+  }
+  .Productlist {
+    margin-top: 30px;
+    .Productmenu {
+      width: 160px;
+      background: #ffffff;
+      margin: 0 60px 0 0;
+      li {
+        height: 56px;
+        line-height: 56px;
+        text-align: center;
+        color: #999999;
+        cursor: pointer;
+      }
+      & .activemenu {
+        background: #f5f7fa;
+        color: #000000;
+      }
+    }
+    .Productres {
+      width: 1200px;
+      .reshead {
+        ul {
+          margin: 0 0 30px 0;
+          li {
+            padding: 0 20px;
+            display: inline-block;
+            list-style: none;
+            cursor: pointer;
+            font-size: 12px;
+            color: #666666;
+          }
+          & li:first-child {
+            padding-left: 0;
+          }
+          & li.active {
+            font-size: 14px;
+            color: #333333;
+          }
+        }
+      }
+      .resprulist {
+        display: flex;
+        flex-wrap: wrap;
+        -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        -ms-flex-line-pack: justify;
+        align-content: space-between;
+        margin: 0;
+        li {
+          margin-left: 20px;
+          display: inline-block;
+          list-style: none;
+          width: 320px;
+          height: 320px;
+          background: #ffffff;
+          border-radius: 4px;
+          position: relative;
+          img {
+            height: 240px;
+            border-radius: 4px 4px 0 0;
+          }
+          .mask {
+            width: 320px;
+            height: 240px;
+            line-height: 240px;
+            background: #000000;
+            opacity: 0.5;
+            position: absolute;
+            border-radius: 4px;
+            top: 0;
+            left: 0;
+            text-align: center;
+            .maskbutton {
+              min-width: 96px;
+              height: 40px;
+              border: 1px solid rgba(245, 245, 245, 1);
+              border-radius: 4px;
+              background: none;
+              margin: 0 20px 0 20px;
+              color: #ffffff;
+            }
+          }
+          .title {
+            text-align: center;
+            padding-top: 30px;
+            .el-dropdown {
+              float: right;
+              margin-right: 20px;
+            }
+          }
+        }
+        & li:first-child {
+          margin-left: 0;
+        }
+      }
+      .rezonelist{
+          .has-gutter{
+              th{
+                  background: #F5F7FA;
+              }
+          }
+          .cell{
+              .el-link{
+                  margin: 0 20px;
+              }
+          }
+      }
+      .right {
+        color: #666666;
+        cursor: pointer;
+        i {
+          color: #333333;
+          margin-right: 3px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+  .createFlevel{
+    .el-dialog{
+        margin-top: 30vh!important;
+        .el-dialog__body{
+            padding: 20px;
+            span{
+                margin-bottom: 10px;
+                color: #666666;
+                display: inline-block;
+            }
         }
     }
+  }
 }
 </style>

@@ -1,11 +1,11 @@
 import axios from 'axios'
 import QS from 'qs'
-import { MessageBox, Message } from 'element-ui'
+import { MessageBox, Message,Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 import { Config } from 'svgo'
 
-
+let loadingInstance = null //加载全局的loading
 //注册axios
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
@@ -22,8 +22,6 @@ else if (process.env.NODE_ENV == 'production') {
   service.defaults.baseURL = 'https://www.production.com';
 }
 //post请求头的设置
-// service.defaults.headers.common['Authorization'] = AUTH_TOKEN;
-service.defaults.emulateJSON=true;
 service.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 // 请求拦截
 service.interceptors.request.use(
@@ -34,6 +32,10 @@ service.interceptors.request.use(
       // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断 
       config.headers['X-Token'] = getToken()
     }
+    loadingInstance = Loading.service({       // 发起请求时加载全局loading，请求失败或有响应时会关闭
+      spinner: 'fa fa-spinner fa-spin fa-3x fa-fw',
+      text: '拼命加载中...'
+    })
     return config
   },
   error => {
@@ -46,6 +48,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
+    loadingInstance.close();
     // 如果返回的状态码为0，说明接口请求成功，可以正常拿到数据     
     // 否则的话抛出错误
     if (response.data.code === 0) {
@@ -61,6 +64,7 @@ service.interceptors.response.use(
   },
   // 服务器状态码不是2开头的的情况
   error => {
+    loadingInstance.close()
     if (error.response.status) {
       switch (error.response.status) {
         // 401: 未登录
