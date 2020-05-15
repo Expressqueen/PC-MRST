@@ -8,7 +8,7 @@
         </span>
       </div>
       <div class="persstable">
-        <el-table :data="tableData" stripe style="width: 100%">
+        <el-table :data="tableData" stripe style="width: 100%" :max-height="tableheight"> 
           <el-table-column prop="id" v-if="show"></el-table-column>
           <el-table-column prop="rolename" label="名称"></el-table-column>
           <el-table-column prop="iden" label="身份"></el-table-column>
@@ -16,7 +16,7 @@
           <el-table-column prop="" label="操作" width="220">
             <template slot-scope="scope">
               <a href="javascript:void(0)" @click="Createper(scope.row)" class="temscope">
-                    <i class="el-icon-s-tools"></i>
+                    <i class="el-icon-circle-plus-outline"></i>
                     创建
               </a>
               <a href="javascript:void(0)" @click="Setper(scope.row)" class="temscope">
@@ -81,11 +81,14 @@ export default {
         DepartHead:""
       },
       Setpresion: true,
-      show:false
+      show:false,
+      tableheight:""
     };
   },
   mounted(){
     this.getRolelist();
+    //计算table的最大高度
+    this.tableheight=document.getElementsByClassName('pergroup')[0].clientHeight-90
   },
   methods: {
     //获取权限组列表
@@ -209,6 +212,9 @@ export default {
     color: #666666;
     font-weight: 400;
   }
+  .el-table--enable-row-hover .el-table__body tr:hover td{
+      background: #F5F7FA!important;
+    }
   .setpresion {
     .el-dialog {
       height: 80%;

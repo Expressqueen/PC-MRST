@@ -90,8 +90,10 @@
         :visible.sync="CFlevel"
         width="420px"
         class="createFlevel">
-        <span>分区名称</span>
-        <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
+        <div>
+          <span>分区名称</span>
+          <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
+        </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click="CFlevel = false">取 消</el-button>
             <el-button type="primary" @click="CFlevel = false">确 定</el-button>
@@ -99,15 +101,29 @@
     </el-dialog>
     <!-- 设置分区 -->
     <el-dialog
-        :title="leveltitle"
-        :visible.sync="Setlevel"
+        title="设置"
+        :visible.sync="Setleveldialog"
         width="420px"
         class="createFlevel">
-        <span>修改分区名称</span>
-        <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
+        <el-form label-position="top" label-width="80px" :model="SetLevel" ref="SetLevel" :rules="SetLevelrule">
+          <el-form-item label="修改分区名称" prop="zonename">
+            <el-input v-model="SetLevel.zonename"></el-input>
+          </el-form-item>
+          <el-form-item label="移动到其他分区" prop="movezone">
+            <!-- <el-input v-model="SetLevel.movezonelist"></el-input> -->
+            <el-select v-model="SetLevel.movezone" placeholder="请选择">
+              <el-option
+                v-for="item in SetLevel.movezonelist"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
         <span slot="footer" class="dialog-footer">
-            <el-button @click="CFlevel = false">取 消</el-button>
-            <el-button type="primary" @click="CFlevel = false">确 定</el-button>
+            <el-button @click="Setleveldialog = false">取 消</el-button>
+            <el-button type="primary" @click="SetOkzone">确 定</el-button>
         </span>
     </el-dialog>
   </div>
@@ -178,7 +194,22 @@ export default {
       CFlevel:false,
       leveltitle:'创建一级分区',
       Flevel:'',
-      Setlevel:false
+      Setleveldialog:false,
+      SetLevel:{
+        zonename:"",
+        movezone:"",
+        movezonelist:[
+          {
+            value: 'beijing',
+            label: '北京'
+          }
+        ]
+      },
+      SetLevelrule:{
+        zonename:[{ required: true, message: '请输入分区名称', trigger: 'blur' }],
+        movezone:[{ required: true, message: '请选择修改的分区', trigger: 'change'}]
+      }
+
     };
   },
   mounted() {
@@ -212,6 +243,30 @@ export default {
     leave() {
       this.imgcurrent = false;
       this.imgcurrent = null;
+    },
+    //设置分区
+    Setlevel(row){
+      this.Setleveldialog=true;
+    },
+    //设置修改分区保存
+    SetOkzone(){
+      this.$confirm('是否重新设置分区?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$refs['SetLevel'].validate((valid) => {
+          if (valid) {
+            this.$message.success("分区设置成功！")
+            this.Setleveldialog=false;
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+        }).catch(() => {
+          this.$message.info("已取消设置该分区！")
+        });
     }
   }
 };
@@ -366,12 +421,16 @@ export default {
   .createFlevel{
     .el-dialog{
         margin-top: 30vh!important;
+        height: auto;
         .el-dialog__body{
             padding: 20px;
             span{
                 margin-bottom: 10px;
                 color: #666666;
                 display: inline-block;
+            }
+            .el-form-item__label{
+              line-height: inherit;
             }
         }
     }

@@ -40,7 +40,7 @@
       </div>
     </div>
     <!-- 创建权限 -->
-    <el-dialog :title="Pretitle" :visible.sync="dialogCreatepermis" :close-on-click-modal="false">
+    <el-dialog :title="Pretitle" :visible.sync="dialogCreatepermis" :close-on-click-modal="false" width="960">
       <el-form
         :model="Createpermisform"
         label-position="right"
@@ -50,7 +50,7 @@
         :rules="permisformrule"
       >
         <el-form-item label="父级" prop="Plevel">
-          <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点">
+          <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点" :disabled="isEditplevel">
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -185,7 +185,8 @@ export default {
           url:
             "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
         }
-      ]
+      ],
+      isEditplevel:false
     };
   },
   mounted() {
@@ -209,10 +210,12 @@ export default {
     AddRole(){
       this.Pretitle = "创建权限";
       this.dialogCreatepermis=true;
+      this.isEditplevel=false;
     },
     //修改权限
     EditRole() {
       this.Pretitle = "编辑权限";
+      this.isEditplevel=true;
       if (this.ButtonroleId == "") {
         this.$message.warning("请选择要编辑的权限");
       } else {
