@@ -28,7 +28,7 @@
           <el-form-item label="选择部门" prop="deptname">
             <el-select v-model="Regisform.deptname" placeholder="请选择部门">
               <el-option
-                v-for="item in Regisform.departlist.child"
+                v-for="item in Regisform.departlist"
                 :key="item.id"
                 :label="item.depname"
                 :value="item.id"
@@ -81,8 +81,7 @@ export default {
         setpassword: "",
         confpassword: "",
         deptname:"",
-        departlist:{
-        },
+        departlist:[],
       },
       RegisRule: {
         name:[{required:true,message:"请输入真实姓名",trigger:'blur'}],
@@ -96,18 +95,39 @@ export default {
     };
   },
   mounted(){
-    let params={
-      Invi:this.$route.query.Invi
-    }
-    getARegi(params).then(res=>{
-      var revicedata=res.data.data;
-      this.inviter=revicedata.nickname;
-      this.avturl=revicedata.img;
-      this.nick_id=revicedata.nick_id;
-      this.Regisform.departlist=revicedata.dep_list
-    })
+    this.GetInviinfo();
   },
   methods: {
+    //获取邀请人信息
+    GetInviinfo(){
+      let params={
+        Invi:this.$route.query.Invi
+      }
+      getARegi(params).then(res=>{
+        var revicedata=res.data.data;
+        this.inviter=revicedata.nickname;
+        this.avturl=revicedata.img;
+        this.nick_id=revicedata.nick_id;
+        this.Regisform.departlist.push({
+          depname:revicedata.dep_list.depname,
+          id:revicedata.dep_list.id
+        })
+        this.getMenuList(revicedata.dep_list.child)
+      })
+    },
+    //递归获取所有的子集数据
+    getMenuList(menulist){
+      for(let i=0;i<menulist.length;i++){
+        if(menulist[i].child.length > 0){
+          this.getMenuList(menulist[i].child);
+        }else{
+          this.Regisform.departlist.push({
+            depname:menulist[i].depname,
+            id:menulist[i].id
+          })
+        }
+      }
+    },
     //提交注册
     SubApply() {
       this.$refs["Regisform"].validate(valid => {
@@ -146,7 +166,7 @@ export default {
 .Register {
   width: 100%;
   height: 100%;
-  position: relative;
+  // position: relative;
   .regpage {
     position: absolute;
     width: 560px;

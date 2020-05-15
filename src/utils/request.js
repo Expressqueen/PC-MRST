@@ -138,12 +138,12 @@ export const get = (url, params, config = {}) => {
 }
 
 /* post请求  */
-export const post = (url, params, config = {}) => {
+export const post = (url, data, config = {}) => {
   return new Promise((resolve, reject) => {
     service({
       method: 'post',
       url,
-      params,
+      data,
       ...config
     }).then(response => {
       resolve(response)
