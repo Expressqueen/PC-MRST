@@ -49,8 +49,8 @@
         ref="Createpermisform"
         :rules="permisformrule"
       >
-        <el-form-item label="父级" prop="Plevel">
-          <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点">
+        <el-form-item label="父级" prop="pid">
+          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点">
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -59,24 +59,24 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="Createpermisform.name" autocomplete="off" placeholder="中文名称"></el-input>
+        <el-form-item label="名称" prop="conname">
+          <el-input v-model="Createpermisform.conname" autocomplete="off" placeholder="中文名称"></el-input>
         </el-form-item>
-        <el-form-item label="路径" prop="path">
+        <el-form-item label="路径" prop="route">
           <el-input
-            v-model="Createpermisform.path"
+            v-model="Createpermisform.route"
             autocomplete="off"
             placeholder="输入模块/控制器/方法即可 例如 admin/Rule/index"
           ></el-input>
         </el-form-item>
-        <el-form-item label="展示方式" prop="showtype">
-          <el-select v-model="Createpermisform.showtype" placeholder="请选择展示方式">
+        <el-form-item label="展示方式" prop="dis">
+          <el-select v-model="Createpermisform.dis" placeholder="请选择展示方式">
             <el-option label="操作" value="1"></el-option>
             <el-option label="导航" value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="ICON" prop="ICON">
-          <el-checkbox-group v-model="Createpermisform.ICON" @change="SelectICON">
+        <el-form-item label="ICON" prop="icon">
+          <el-checkbox-group v-model="Createpermisform.icon" @change="SelectICON">
             <el-checkbox label="1" name="ICONtype" value="1">图片</el-checkbox>
             <el-checkbox label="2" name="ICONtype" value="2">font</el-checkbox>
             <el-checkbox label="3" name="ICONtype" value="3">无</el-checkbox>
@@ -86,10 +86,11 @@
         <el-form-item label v-if="showIconType=='1'">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="UpReady"
-            :on-remove="RemoveImage"
+            ref="uploadImg"
+            action="string"
             :file-list="fileList"
+            :http-request="UploadImg"
+            :on-success="fileSuccess"
             list-type="picture"
           >
             <el-button size="small" type="primary" plain>点击上传</el-button>
@@ -101,7 +102,7 @@
           <el-popover placement="bottom-end" width="450" trigger="click" :ref="`popover`">
             <el-input
               slot="reference"
-              v-model="selecticonclass"
+              v-model="Createpermisform.font"
               autocomplete="off"
               placeholder="选择图标"
             ></el-input>
@@ -112,7 +113,7 @@
                   <i class="el-icon-close"></i>
                 </p>
               </div>
-              <GetIcon :Seticonclass.sync="selecticonclass"></GetIcon>
+              <GetIcon :Seticonclass.sync="Createpermisform.font"></GetIcon>
             </div>
           </el-popover>
         </el-form-item>
@@ -137,7 +138,8 @@ import {
   AddARuCrLi,
   EditARuCrUp,
   DelARuDe,
-  SearchARuCrUp
+  SearchARuCrUp,
+  Filetool
 } from "@/api/index";
 import GetIcon from "@/components/SetIcon";
 export default {
@@ -149,43 +151,30 @@ export default {
       showPerims: "", //当前操作的权限面板
       dialogCreatepermis: false,
       showIconType: null,
-      selecticonclass: "",
+      // selecticonclass: "",
       Pretitle: "创建权限",
       ButtonroleId: "",
       Createpermisform: {
-        Plevel: "",
+        pid: "",
         PlevelList: [],
-        name: "",
-        path: "",
-        showtype: "",
-        ICON: [],
-        note: "",
+        conname: "",
+        route: "",
+        dis: "",
+        icon: [],
+        img:"",
+        font:"",
+        remark: "",
         sort: ""
       },
       permisformrule: {
-        Plevel: [{ required: true, message: "请选择父级", trigger: "change" }],
-        name: [{ required: true, message: "请填写权限名称", trigger: "blur" }],
-        path: [{ required: true, message: "请填写路径", trigger: "blur" }],
-        showtype: [
-          { required: true, message: "请选择展示方式", trigger: "change" }
-        ],
-        ICON: [
-          {
-            type: "array",
-            required: true,
-            message: "请至少选择一个图标",
-            trigger: "change"
-          }
-        ],
+        pid: [{ required: true, message: "请选择父级", trigger: "change" }],
+        conname: [{ required: true, message: "请填写权限名称", trigger: "blur" }],
+        route: [{ required: true, message: "请填写路径", trigger: "blur" }],
+        dis: [{ required: true, message: "请选择展示方式", trigger: "change" }],
+        icon: [{required: true, message: "请至少选择一个图标", trigger: "change"}],
         sort: [{ required: true, message: "请输入排序", trigger: "blur" }]
       },
-      fileList: [
-        {
-          name: "food.jpeg",
-          url:
-            "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
-        }
-      ]
+      fileList: []
     };
   },
   mounted() {
@@ -223,17 +212,10 @@ export default {
     //获取单个权限信息
     getDancleInfo() {
       SearchARuCrUp({ rule_id: this.ButtonroleId }).then(res => {
-        let resdata = res.data.data[0];
-        this.Createpermisform.Plevel = resdata.pid;
-        this.Createpermisform.name = resdata.conname;
-        this.Createpermisform.path = resdata.route;
-        this.Createpermisform.showtype = resdata.dis + "";
-        this.Createpermisform.ICON.push(resdata.icon + "");
-        this.SelectICON(this.Createpermisform.ICON);
-        // this.fileList.url=resdata.img;
-        this.selecticonclass = resdata.font;
-        this.Createpermisform.note = resdata.remark;
-        this.Createpermisform.sort = resdata.sort;
+        this.Createpermisform=res.data.data[0];
+        this.fileList.url=res.data.data[0].img;
+        this.Createpermisform.icon=[this.Createpermisform.icon+''];
+        this.SelectICON(this.Createpermisform.icon);
       });
     },
     //删除当前权限组下的权限
@@ -265,31 +247,38 @@ export default {
     },
     //判断当前选择是iCON方式
     SelectICON(value) {
-      if (this.Createpermisform.ICON.length > 1)
-        this.Createpermisform.ICON.splice(0, 1);
+      if (value.length > 1)
+        value.splice(0, 1);
       let val = value.join(",");
       this.showIconType = val;
+      if(val!="2")
+      this.Createpermisform.font="";
+      if(val!="1")
+      this.Createpermisform.img="";
     },
-    //点击文件image已上传文件的钩子
-    UpReady(file, fileList) {},
-    //上传的Image移除方法
-    RemoveImage(file) {},
+    //上传文件
+    UploadImg(param){
+      let params = new FormData()
+      params.append('JuRule', param.file)
+      Filetool(params).then(res => {
+        this.$message.success(res.data.msg);
+        this.Createpermisform.img=res.data.data;
+        param.onSuccess()  // 上传成功的图片会显示绿色的对勾
+      }).catch(err=>{
+        param.onError()
+      })
+    },
+    //上传成功修改fileList
+    fileSuccess(response, file, fileList){
+      this.$refs.uploadImg.clearFiles() //清除文件对象
+      this.fileList = [{name: file.name, url: file.url}] // 重新手动赋值filstList， 免得自定义上传成功了, 而fileList并没有动态改变， 这样每次都是上传一个对象
+    },
     //权限添加
     Primsmannage() {
       this.$refs["Createpermisform"].validate(valid => {
         if (valid) {
-          let icon = this.Createpermisform.ICON.join(",");
-          let params = {
-              pid: this.Createpermisform.Plevel,
-              conname: this.Createpermisform.name,
-              route: this.Createpermisform.path,
-              dis: this.Createpermisform.showtype,
-              icon: icon,
-              img: this.fileList[0].url,
-              font: this.selecticonclass,
-              remark: this.Createpermisform.note,
-              sort: this.Createpermisform.sort
-          };
+          let params=this.Createpermisform;
+          params.icon=this.Createpermisform.icon.join(",")
           if (this.Pretitle == "创建权限") {
             AddARuCrLi(params).then(res => {
               this.$message.success("权限增加成功");
@@ -315,6 +304,9 @@ export default {
     //重置表单
     resetpermis(formName) {
       this.$refs[formName].resetFields();
+      if (this.Pretitle == "编辑权限") {
+        this.getDancleInfo();
+      }
     }
   }
 };

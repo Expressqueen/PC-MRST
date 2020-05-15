@@ -103,10 +103,7 @@ export default {
     //设置集团
     SetGroup(item){
       this.$refs['SetBlocgroup'].SetBlocdialog=true;
-      // this.$refs['SetBlocgroup'].GroupId=item.id;
-      this.$nextTick(function () {
-        this.GetBlocInfo(item.id);
-      })
+      this.GetBlocInfo(item.id);
       
     },
     //集团详情
@@ -132,7 +129,6 @@ export default {
             id: id
         }
       });
-      // this.$router.go(0);
     }
   }
 };
@@ -159,7 +155,7 @@ export default {
   .Searchhead {
     height: 80px;
     background: #ffffff;
-    margin-top: 20px;
+    margin: 20px 0;
     line-height: 80px;
     padding: 0 20px;
     .Searchinput {

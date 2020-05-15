@@ -82,6 +82,7 @@
                   :key="tag.id"
                   closable
                   size="mini"
+                  @close="Deltags(tag)"
                 >{{tag.name}}</el-tag>
                 <i slot="suffix" class="el-icon-arrow-down right"></i>
               </div>
@@ -291,6 +292,23 @@ export default {
             message: "已取消修改选择业态"
           });
         });
+    },
+    //删除tags当前业态选择
+    Deltags(tag){
+      this.$confirm("是否取消选择当前业态?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      }).then(()=>{
+        this.selectformatlist.splice(this.selectformatlist.indexOf(tag), 1);
+        const newArr = JSON.parse(JSON.stringify(this.selectformatlist));
+        this.ImpotantInfo.formats = newArr;
+        this.FormatsIselect();
+        this.$message.success("您已删除当前选择业态")
+      }).catch(()=>{
+        this.$message.info("您已取消删除当前选择业态")
+      })
     },
     //保存重要信息
     SaveImportantInfo() {

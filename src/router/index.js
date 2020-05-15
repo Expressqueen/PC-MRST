@@ -85,6 +85,19 @@ const router=new Router({
       }],
       hidden:true
     },
+    //集团门店
+    {
+      path: '/',
+      component: Layout,
+      redirect: '/Storeshop',
+      children: [{
+        path: 'Storeshop',
+        name: 'Storeshop',
+        component: () => import('@/views/ProductGroup/Storeshop'),
+        meta: { title: '集团门店'}
+      }],
+      hidden:true
+    },
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
   ]
