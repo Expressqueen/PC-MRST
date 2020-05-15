@@ -92,18 +92,10 @@
         :title="leveltitle"
         :visible.sync="CFlevel"
         width="420px"
-<<<<<<< HEAD
-        class="createFlevel">
-        <div>
-          <span>分区名称</span>
-          <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
-        </div>
-=======
         class="createFlevel"
         :close-on-click-modal="false">
         <span>分区名称</span>
         <el-input v-model="Flevel" placeholder="请输入一级分区名称"></el-input>
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
         <span slot="footer" class="dialog-footer">
             <el-button @click="CFlevel = false">取 消</el-button>
             <el-button type="primary" @click="CFlevel = false">确 定</el-button>
@@ -112,7 +104,6 @@
     <!-- 设置分区 -->
     <el-dialog
         title="设置"
-<<<<<<< HEAD
         :visible.sync="Setleveldialog"
         width="420px"
         class="createFlevel">
@@ -130,25 +121,6 @@
                 :value="item.value">
               </el-option>
             </el-select>
-=======
-        :visible.sync="Setlevel"
-        width="420px"
-        class="createFlevel"
-        :close-on-click-modal="false">
-        <el-form label-position="top" label-width="80px" :model="SetLevelform">
-          <el-form-item label="修改分区名称">
-            <el-input v-model="SetLevelform.zonename"></el-input>
-          </el-form-item>
-          <el-form-item label="移动到其他分区">
-              <el-select v-model="SetLevelform.movezone" placeholder="请选择移动的分区">
-                <el-option
-                  v-for="item in SetLevelform.movezonelist"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </el-select>
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -228,18 +200,12 @@ export default {
       CFlevel:false,
       leveltitle:'创建一级分区',
       Flevel:'',
-<<<<<<< HEAD
       Setleveldialog:false,
       SetLevel:{
-=======
-      Setlevel:false,
-      SetLevelform:{
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
         zonename:"",
         movezone:"",
         movezonelist:[
           {
-<<<<<<< HEAD
             value: 'beijing',
             label: '北京'
           }
@@ -250,13 +216,6 @@ export default {
         movezone:[{ required: true, message: '请选择修改的分区', trigger: 'change'}]
       }
 
-=======
-            value: '选项1',
-            label: '黄金糕'
-          }
-        ]
-      }
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
     };
   },
   mounted() {
@@ -299,7 +258,6 @@ export default {
       this.imgcurrent = null;
     },
     //设置分区
-<<<<<<< HEAD
     Setlevel(row){
       this.Setleveldialog=true;
     },
@@ -322,7 +280,7 @@ export default {
         }).catch(() => {
           this.$message.info("已取消设置该分区！")
         });
-=======
+    },
     Setzone(row){
       this.Setlevel=true;
     },
@@ -338,7 +296,6 @@ export default {
     // 业态产品设置
     set(){
       this.$refs['setFormat'].mask=true;
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
     }
   }
 };

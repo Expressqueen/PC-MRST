@@ -49,13 +49,8 @@
         ref="Createpermisform"
         :rules="permisformrule"
       >
-<<<<<<< HEAD
         <el-form-item label="父级" prop="Plevel">
           <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点" :disabled="isEditplevel">
-=======
-        <el-form-item label="父级" prop="pid">
-          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点">
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -179,7 +174,6 @@ export default {
         icon: [{required: true, message: "请至少选择一个图标", trigger: "change"}],
         sort: [{ required: true, message: "请输入排序", trigger: "blur" }]
       },
-<<<<<<< HEAD
       fileList: [
         {
           name: "food.jpeg",
@@ -188,9 +182,6 @@ export default {
         }
       ],
       isEditplevel:false
-=======
-      fileList: []
->>>>>>> 3802230145afdc01aee05f5e229068e5b6b065c7
     };
   },
   mounted() {
