@@ -134,9 +134,10 @@
 </template>
 <script>
 import { FormatList, GoodsList,BlocInfo,GoodIns } from "@/api/index";
+import SetFormat from '@/views/ProductGroup/setFormat.vue';
 export default {
   name: "ProductGroup",
-  // components:{SetFormat},
+  components:{SetFormat},
   data() {
     return {
       activeName: "Pruclist",
