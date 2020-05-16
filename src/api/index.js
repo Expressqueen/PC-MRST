@@ -38,6 +38,8 @@ export const FormatList=(params)=>get('/InState',params) //获取业态列表
 /**产品接口 */
 export const GoodsList=(params)=>get('/Goods',params)  //获取产品列表
 export const GoodIns=(params)=>get('/GoodsIns',params) //业态下产品列表
+/**d大区接口 */
+export const Arelist=(params)=>get('/Are',params)    //大区列表
 
 
 

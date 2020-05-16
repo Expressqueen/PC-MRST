@@ -5,21 +5,18 @@
         <li class="selectcaster">
           <img :src="Blocimg" alt class="blocimg" />
           <i class="el-icon-arrow-right"></i>
-          <el-cascader :options="options">
-            <template slot-scope="{ node, data }">
-              <span>{{ data.label }}</span>
-              <span v-if="!node.isLeaf">({{ data.children.length }})</span>
-            </template>
-          </el-cascader>
+          <treeselect
+            :options="options"
+            :value="value"
+            :searchable="false"
+          />
         </li>
         <li class="line"></li>
         <li class="storelist">
           <ul>
-              <li>门店</li>
-              <li>节目</li>
-              <li>监控</li>
-              <li>统计</li>
-              <li>开闭店</li>
+             <li v-for="(item,index) in storelist" :key="index" 
+             :class="{activestore:activestore==index}"
+             @click="selectstorelable(index)">{{item.label}}</li>
           </ul>
         </li>
       </ul>
@@ -30,170 +27,98 @@
                 placeholder="输入名称/编码搜索"
                 prefix-icon="el-icon-search"
                 v-model="SearchStore"
-                class="SearchStore left">
+                class="SearchStore">
             </el-input>
-            <el-button type="primary" icon="el-icon-circle-plus-outline" class="right">主要按钮</el-button>
         </div>
+        <el-table
+          :data="tableData"
+          style="width: 100%"
+          :max-height="tableheight">
+          <el-table-column
+            prop="date"
+            label="日期"
+            width="180">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="姓名"
+            width="180">
+          </el-table-column>
+          <el-table-column
+            prop="address"
+            label="地址">
+          </el-table-column>
+        </el-table>
     </div>
   </div>
 </template>
 <script>
+// import the component
+  import Treeselect from '@riophae/vue-treeselect'
+  // import the styles
+  import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 export default {
   name: "Storeshop",
+  components: { Treeselect },
   data() {
     return {
       Blocimg:
         "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
-      options: [
-        {
-          value: "zhinan",
-          label: "指南",
-          children: [
-            {
-              value: "shejiyuanze",
-              label: "设计原则",
-              children: [
-                {
-                  value: "yizhi",
-                  label: "一致"
-                },
-                {
-                  value: "fankui",
-                  label: "反馈"
-                },
-                {
-                  value: "xiaolv",
-                  label: "效率"
-                },
-                {
-                  value: "kekong",
-                  label: "可控"
-                }
-              ]
-            },
-            {
-              value: "daohang",
-              label: "导航",
-              children: [
-                {
-                  value: "cexiangdaohang",
-                  label: "侧向导航"
-                },
-                {
-                  value: "dingbudaohang",
-                  label: "顶部导航"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          value: "zujian",
-          label: "组件",
-          children: [
-            {
-              value: "basic",
-              label: "Basic",
-              children: [
-                {
-                  value: "layout",
-                  label: "Layout 布局"
-                }
-              ]
-            },
-            {
-              value: "form",
-              label: "Form",
-              children: [
-                {
-                  value: "radio",
-                  label: "Radio 单选框"
-                },
-                {
-                  value: "checkbox",
-                  label: "Checkbox 多选框"
-                },
-                {
-                  value: "input",
-                  label: "Input 输入框"
-                }
-              ]
-            },
-            {
-              value: "data",
-              label: "Data",
-              children: [
-                {
-                  value: "table",
-                  label: "Table 表格"
-                },
-                {
-                  value: "tag",
-                  label: "Tag 标签"
-                }
-              ]
-            },
-            {
-              value: "notice",
-              label: "Notice",
-              children: [
-                {
-                  value: "alert",
-                  label: "Alert 警告"
-                },
-                {
-                  value: "loading",
-                  label: "Loading 加载"
-                }
-              ]
-            },
-            {
-              value: "navigation",
-              label: "Navigation",
-              children: [
-                {
-                  value: "menu",
-                  label: "NavMenu 导航菜单"
-                },
-                {
-                  value: "tabs",
-                  label: "Tabs 标签页"
-                }
-              ]
-            },
-            {
-              value: "others",
-              label: "Others",
-              children: [
-                {
-                  value: "dialog",
-                  label: "Dialog 对话框"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          value: "ziyuan",
-          label: "资源",
-          children: [
-            {
-              value: "axure",
-              label: "Axure Components"
-            },
-            {
-              value: "sketch",
-              label: "Sketch Templates"
-            },
-            {
-              value: "jiaohu",
-              label: "组件交互文档"
-            }
-          ]
-        }
+      value: null,
+        // define options
+        options: [ {
+          id: 'a',
+          label: 'a',
+          children: [ {
+            id: 'aa',
+            label: 'aa',
+          }, {
+            id: 'ab',
+            label: 'ab',
+          } ],
+        }, {
+          id: 'b',
+          label: 'b',
+        }, {
+          id: 'c',
+          label: 'c',
+        } ],
+      storelist:[
+        {label:"门店"},
+        {label:"节目"},
+        {label:"监控"},
+        {label:"统计"},
+        {label:"开闭店"}
       ],
-      SearchStore:""
+      activestore:0,
+      SearchStore:"",
+      tableData: [{
+            date: '2016-05-02',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-04',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1517 弄'
+          }, {
+            date: '2016-05-01',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1519 弄'
+          }, {
+            date: '2016-05-03',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1516 弄'
+      }],
+      tableheight:""
     };
+  },
+  mounted(){
+    this.tableheight=document.getElementsByClassName('storebody')[0].clientHeight-90
+  },
+  methods:{
+    selectstorelable(index){
+      this.activestore=index;
+    }
   }
 };
 </script>
@@ -207,8 +132,8 @@ export default {
   .storehead {
     background: #fff;
     height: 80px;
-    // line-height: 80px;
-    padding: 20px 20px 0 20px;
+    line-height: 80px;
+    padding: 0 20px;
     ul {
       li {
         display: inline-block;
@@ -222,6 +147,11 @@ export default {
         i.el-icon-arrow-right {
           margin: 0 5px;
           color: #999999;
+        }
+        .vue-treeselect{
+          display: inline-block;
+          width: 150px;
+          margin-bottom: -12px;
         }
         .el-cascader {
           .el-input__inner {
@@ -249,8 +179,15 @@ export default {
               background:#F5F7FA;
               border:1px solid rgba(234, 238, 247, 1);
               border-radius:4px;
+              line-height: initial;
               li{
                 padding: 10px 20px;
+                color: #999999;
+                cursor: pointer;
+              }
+              li.activestore{
+                background: #fff;
+                color: #333333;
               }
           }
       }
@@ -261,8 +198,11 @@ export default {
     height: calc(100% - 100px);
     margin-top: 20px;
     padding: 30px 30px 0 30px;
-    .SearchStore{
+    .clearfix{
+      margin-bottom: 20px;
+      .SearchStore{
         width: 320px;
+      }
     }
   }
 }

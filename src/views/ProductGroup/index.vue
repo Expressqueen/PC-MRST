@@ -38,6 +38,7 @@
               :key="index"
               @mouseenter="enter(index)"
               @mouseleave="leave()"
+              @click="OpenStore(item)"
             >
               <div class="listbox">
                 <el-image :src="item.image"></el-image>
@@ -73,7 +74,6 @@
             row-key="id"
             border
             :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-            @row-click="OpenStore"
           >
             <el-table-column prop="date" label="分区名称"></el-table-column>
             <el-table-column prop="address" label="操作" width="320">
@@ -285,11 +285,11 @@ export default {
       this.Setlevel=true;
     },
     //跳转门店
-    OpenStore(row,event,column){
+    OpenStore(item){
       this.$router.push({
         name: 'Storeshop',
         query: {
-            id: row.id
+            id: item.id
         }
       });
     },
