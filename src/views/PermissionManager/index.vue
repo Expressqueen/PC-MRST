@@ -40,7 +40,7 @@
       </div>
     </div>
     <!-- 创建权限 -->
-    <el-dialog :title="Pretitle" :visible.sync="dialogCreatepermis" :close-on-click-modal="false" width="960">
+    <el-dialog :title="Pretitle" :visible.sync="dialogCreatepermis" :close-on-click-modal="false" width="960" @close="resitpermis">
       <el-form
         :model="Createpermisform"
         label-position="right"
@@ -49,8 +49,8 @@
         ref="Createpermisform"
         :rules="permisformrule"
       >
-        <el-form-item label="父级" prop="Plevel">
-          <el-select v-model="Createpermisform.Plevel" placeholder="请选择父级节点" :disabled="isEditplevel">
+        <el-form-item label="父级" prop="pid">
+          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点" :disabled="isEditplevel">
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -309,6 +309,10 @@ export default {
           return false;
         }
       });
+    },
+    //弹出层右上角关闭清空表单
+    resitpermis(){
+      this.$refs['Createpermisform'].resetFields();
     },
     //重置表单
     resetpermis(formName) {
