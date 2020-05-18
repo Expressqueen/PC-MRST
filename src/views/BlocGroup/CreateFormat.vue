@@ -56,8 +56,8 @@ export default {
 </script>
 <style lang="scss" scope>
 .formatMask{
-    width:100%;
-    height: 100%;
+    // width:100%;
+    // height: 100%;
     .el-dialog{
         margin-top:280px!important;
         height: auto;

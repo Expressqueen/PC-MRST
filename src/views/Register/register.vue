@@ -18,7 +18,7 @@
             <el-input v-model="Regisform.name"></el-input>
           </el-form-item>
           <el-form-item label="手机号码" prop="tellpone">
-            <el-input v-model="Regisform.tellpone"></el-input>
+            <el-input v-model="Regisform.tellpone"  @keyup.native="getGameList"></el-input>
           </el-form-item>
           <el-form-item prop="Vertcode">
             <el-input v-model="Regisform.Vertcode" placeholder="请输入验证码">
@@ -98,6 +98,9 @@ export default {
     this.GetInviinfo();
   },
   methods: {
+    getGameList(){
+      this.$refs.Regisform.validateField('tellpone');
+    },
     //获取邀请人信息
     GetInviinfo(){
       let params={

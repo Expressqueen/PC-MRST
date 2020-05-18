@@ -4,10 +4,13 @@
     <div class="Blocbody">
       <div class="Searchhead clearfix">
         <el-input
-          placeholder="输入门店名称搜索"
+          placeholder="输入集团名称搜索"
           prefix-icon="el-icon-search"
           v-model="SearchBloc"
           class="Searchinput"
+          clearable
+          @keyup.enter.native="searchBlocgroup"
+          @clear="clearSearch"
         ></el-input>
         <el-row class="right">
           <el-button type="primary" class="blue" @click="createFormat">
@@ -35,6 +38,7 @@
           </span>
         </li>
       </ul>
+      <div class="NullPruc" v-show="searchres"><img src="../../assets/images/slice.png" alt=""><p>未找到该集团</p></div>
       <el-pagination
         background
         layout="prev, pager, next"
@@ -67,7 +71,8 @@ export default {
       SearchBloc: "",
       BlocGrouplist: [],
       currentPage: 1,
-      totalpage: 0
+      totalpage: 0,
+      searchres:false
     };
   },
   watch:{
@@ -78,19 +83,30 @@ export default {
   },
   methods: {
     //获取集团列表数据
-    getBlocList(page) {
+    getBlocList(page,name) {
       let params = {
         page: page,
         pagesize: 8,
-        name: "",
+        name: name, 
         field: "",
         order: 0
       };
       //获取集团列表数据
       BlocList(params).then(res => {
+        if(res.data.data.data==0) this.searchres=true;
+        else  this.searchres=false;
         this.BlocGrouplist = res.data.data.data;
         this.totalpage = res.data.data.total;
       });
+    },
+    //集团搜索
+    searchBlocgroup(){
+      this.getBlocList(1,this.SearchBloc);
+      
+    },
+    //清空搜索
+    clearSearch(){
+      this.getBlocList(1);
     },
     //点击下一页
     CurrentChange(val) {
@@ -134,54 +150,73 @@ export default {
 };
 </script>
 <style lang="scss">
-// #app {
-//   height: auto;
-//   min-height: 100vh;
-//   .headbar {
-//     position: fixed;
-//     z-index: 222;
-//   }
-// }
 .BlocGroup {
   width: 960px;
   margin: 0 auto;
-  min-height: calc(100% - 110px);
+  height: calc(100vh - 110px);
   padding: 40px 0;
   header {
     font-size: 16px;
     font-weight: bold;
     color: #333333;
   }
-  .Searchhead {
-    height: 80px;
-    background: #ffffff;
-    margin: 20px 0;
-    line-height: 80px;
-    padding: 0 20px;
-    .Searchinput {
-      width: 320px;
-    }
-    button {
-      color: #ffffff;
-    }
-  }
-  .showGrouplist {
-    li {
+    .Blocbody{
+      height: 100%;
+      position: relative;
+      .Searchhead {
       height: 80px;
-      line-height: 80px;
       background: #ffffff;
-      margin-bottom: 10px;
-      display: flex;
-      span {
-        flex: 1;
-        text-align: center;
-        img {
-          width: 112px;
-          height: 56px;
-          vertical-align: middle;
-        }
+      margin: 20px 0;
+      line-height: 80px;
+      padding: 0 20px;
+      .Searchinput {
+        width: 320px;
+      }
+      button {
+        color: #ffffff;
       }
     }
+    .showGrouplist {
+      overflow: auto;
+      height: calc(100% - 120px);
+      li {
+        height: 80px;
+        line-height: 80px;
+        background: #ffffff;
+        margin-bottom: 10px;
+        display: flex;
+        span {
+          flex: 1;
+          text-align: center;
+          img {
+            width: 112px;
+            height: 56px;
+            vertical-align: middle;
+          }
+        }
+      }
+      & li:last-child{
+        margin-bottom: 0;
+      }
+    }
+    .NullPruc{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      text-align: center;
+      margin-left: -60px;
+      margin-top: -72px;
+      p{
+        margin-top: 10px;
+      }
+    }
+    & .showGrouplist::-webkit-scrollbar-track-piece{
+      background: #EAEEF7;
+    }
+    .el-pagination{
+      margin: 20px 0!important;
+    }
   }
+  
 }
 </style>

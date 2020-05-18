@@ -7,7 +7,7 @@
           <el-button type="primary" @click="AddRole">
             <i class="el-icon-circle-plus-outline"></i>创建权限
           </el-button>
-          <el-button type="warning" @click="EditRole">
+          <el-button type="warning" @click="EditRole('')">
             <i class="el-icon-edit"></i>编辑权限
           </el-button>
           <el-button type="danger" @click="DelRole">
@@ -21,9 +21,11 @@
             v-for="(item,index) in AroList"
             :key="index"
             :name="index"
-            :title="item.conname"
             v-model="showPerims"
           >
+            <template slot="title">
+              {{item.conname}}<i class="el-icon-edit" style="margin-left:5px" @click.stop="EditRole(item.id)"></i>
+            </template>
             <el-row>
               <el-button
                 type="primary"
@@ -50,7 +52,7 @@
         :rules="permisformrule"
       >
         <el-form-item label="父级" prop="pid">
-          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点" :disabled="isEditplevel">
+          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点">
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -180,8 +182,7 @@ export default {
           url:
             "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
         }
-      ],
-      isEditplevel:false
+      ]
     };
   },
   mounted() {
@@ -205,23 +206,30 @@ export default {
     AddRole(){
       this.Pretitle = "创建权限";
       this.dialogCreatepermis=true;
-      this.isEditplevel=false;
     },
     //修改权限
-    EditRole() {
+    EditRole(pid) {
       this.Pretitle = "编辑权限";
-      this.isEditplevel=true;
-      if (this.ButtonroleId == "") {
-        this.$message.warning("请选择要编辑的权限");
-      } else {
-        this.dialogCreatepermis = true;
-        this.getDancleInfo();
+      if(pid==undefined||pid==""||pid==null){
+        pid=this.ButtonroleId;
+        if (this.ButtonroleId == "") {
+          this.$message.warning("请选择要编辑的权限");
+          return
+        }
       }
+      this.dialogCreatepermis = true;
+      this.getDancleInfo(pid);
     },
     //获取单个权限信息
-    getDancleInfo() {
-      SearchARuCrUp({ rule_id: this.ButtonroleId }).then(res => {
+    getDancleInfo(pid) {
+      let rule_id;
+      if(pid!=undefined||pid!=null||pid!="")
+      rule_id=pid
+      else rule_id=this.ButtonroleId
+      SearchARuCrUp({ rule_id:rule_id }).then(res => {
+        let PlevelList=this.Createpermisform.PlevelList;
         this.Createpermisform=res.data.data[0];
+        this.Createpermisform.PlevelList=PlevelList;
         this.fileList.url=res.data.data[0].img;
         this.Createpermisform.icon=[this.Createpermisform.icon+''];
         this.SelectICON(this.Createpermisform.icon);
@@ -335,6 +343,9 @@ export default {
     i {
       font-size: 16px;
     }
+  }
+  .el-collapse{
+    border: none;
   }
   .pergroup {
     height: 100%;

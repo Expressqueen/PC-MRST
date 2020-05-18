@@ -129,7 +129,7 @@
         </span>
     </el-dialog>
     <!-- 业态产品设置 -->
-    <!-- <SetFormat ref="setFormat"></SetFormat> -->
+    <SetFormat ref="setFormat"></SetFormat>
   </div>
 </template>
 <script>
@@ -214,7 +214,8 @@ export default {
       SetLevelrule:{
         zonename:[{ required: true, message: '请输入分区名称', trigger: 'blur' }],
         movezone:[{ required: true, message: '请选择修改的分区', trigger: 'change'}]
-      }
+      },
+      maskDialog:true
 
     };
   },
@@ -223,6 +224,7 @@ export default {
     //获取业态列表
     BlocInfo({id:this.GroupId}).then(res=>{
         this.formatlist=res.data.data.instates;
+        // if(this.formatlis.length>0)
         //获取业态产品列表
         this.getBlocList(this.GroupId,this.formatlist[this.activemenu].id);
     })
@@ -295,7 +297,7 @@ export default {
     },
     // 业态产品设置
     set(){
-      this.$refs['setFormat'].mask=true;
+      this.$refs['setFormat'].maskDialog=true;
     }
   }
 };
@@ -373,7 +375,7 @@ export default {
         flex-wrap: wrap;
         -webkit-box-pack: justify;
         -ms-flex-pack: justify;
-        justify-content: space-between;
+        // justify-content: space-between;
         -ms-flex-line-pack: justify;
         align-items: center;
         margin: 0;
