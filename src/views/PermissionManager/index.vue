@@ -143,6 +143,7 @@ import {
   SearchARuCrUp,
   Filetool
 } from "@/api/index";
+import { _debounce } from '@/utils/index'
 import GetIcon from "@/components/SetIcon";
 export default {
   name: "PermissionManager",
@@ -210,15 +211,22 @@ export default {
     //修改权限
     EditRole(pid) {
       this.Pretitle = "编辑权限";
-      if(pid==undefined||pid==""||pid==null){
+      _debounce(function(_type, index, item){
+        debugger
+        // do something ...
+        console.log(123)
+        if(pid==undefined||pid==""||pid==null){
         pid=this.ButtonroleId;
-        if (this.ButtonroleId == "") {
-          this.$message.warning("请选择要编辑的权限");
-          return
+          if (this.ButtonroleId == "") {
+            this.$message.warning("请选择要编辑的权限");
+            return
+          }
         }
-      }
-      this.dialogCreatepermis = true;
-      this.getDancleInfo(pid);
+        this.dialogCreatepermis = true;
+        this.getDancleInfo(pid);
+    }, 200)
+
+      
     },
     //获取单个权限信息
     getDancleInfo(pid) {
