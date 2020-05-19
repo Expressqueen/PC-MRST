@@ -18,17 +18,7 @@
           :rules="Basicinforule"
         >
           <el-form-item label="集团logo" prop="cy_img">
-            <el-upload
-              class="avatar-uploader"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              :show-file-list="false"
-              :on-success="handleAvatarSuccess"
-              :before-upload="beforeAvatarUpload"
-              v-loading="loading"
-            >
-              <img v-if="Basicinfo.cy_img" :src="Basicinfo.cy_img" class="avatar" />
-              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            </el-upload>
+            <up-img :Imgurl.sync="Basicinfo.cy_img" @callvalidImg="UpImgSuccess"></up-img>
           </el-form-item>
           <el-form-item label="集团名称" prop="cy_name">
             <el-input v-model="Basicinfo.cy_name" autocomplete="off" placeholder="集团名称"></el-input>
@@ -78,11 +68,11 @@
               </div>
               <div slot="reference" class="likeinput clearfix">
                 <el-tag
-                  v-for="tag in ImpotantInfo.formats"
+                  v-for="(tag,index) in ImpotantInfo.formats"
                   :key="tag.id"
                   closable
                   size="mini"
-                  @close="Deltags(tag)"
+                  @close="Deltags(tag,index)"
                 >{{tag.name}}</el-tag>
                 <i slot="suffix" class="el-icon-arrow-down right"></i>
               </div>
@@ -111,7 +101,10 @@
 </template>
 <script>
 import { FormatList,pagehole,EditBlocBase,EditBlocImpor,BlocInfo,DelBloc } from "@/api/index";
+import { _debounce } from '@/utils/index'
+import UpImg from '@/views/BlocGroup/UploadImg'
 export default {
+  components:{UpImg},
   data() {
     let validformats = (rule, value, callback) => {
       if (value.length == 0) {
@@ -123,14 +116,15 @@ export default {
     return {
       SetBlocdialog: false,
       GroupId:"",
+      Nowpage:'', //当前设置的是第几页的数据
       activeName:"Basicinfo", //记录当前tab默认选中那个标签
       Resetform:{}, //记录当前选中form，重置时使用
       Basicinfo: {
       },
       Basicinforule: {
-        // cy_img: [
-        //   { required: true, message: "请上传集团logo", trigger: "blur" }
-        // ],
+        cy_img: [
+          { required: true, message: "请上传集团logo", trigger: "blur" }
+        ],
         cy_name: [
           { required: true, message: "请输入集团名称", trigger: "blur" }
         ]
@@ -158,22 +152,17 @@ export default {
       this.selectformatlist = newArr;
       this.FormatsIselect();
     },
-    /**基础信息操作 */
-    handleAvatarSuccess(res, file) {
-      this.Basicinfo.grouplogourl = URL.createObjectURL(file.raw);
-      this.loading = false;
-    },
-    beforeAvatarUpload(file) {
-      this.loading = true;
+    UpImgSuccess(){
+      this.$refs.Basicinfo.validateField('cy_img');
     },
     //保存基本信息
-    SaveBasicInfo() {
+    SaveBasicInfo:_debounce(function(_type, index, item){
       this.$refs["Basicinfo"].validate(valid => {
         if (valid) {
             let params={
                 id:this.Basicinfo.id,
                 name:this.Basicinfo.cy_name,
-                // img:"",
+                cy_img:this.Basicinfo.cy_img,
                 person:this.Basicinfo.person,
                 phone:this.Basicinfo.cy_phone,
                 intro:this.Basicinfo.intro
@@ -186,20 +175,19 @@ export default {
           return false;
         }
       });
-    },
+    }),
     //重置基本信息
-    Restform(formName) {
-      this.$refs[formName].resetFields();
-      if(formName == "Basicinfo"){
+    Restform:_debounce(function(_type, index, item){
+      this.$refs[_type].resetFields();
+      if(_type == "Basicinfo"){
         this.Basicinfo=JSON.parse(JSON.stringify(this.Resetform));
       }
-      else if (formName == "ImpotantInfo") {
+      else if (_type == "ImpotantInfo") {
         this.ImpotantInfo.formats=JSON.parse(JSON.stringify(this.Resetform)).instates;
         this.Initformats();
       }
       this.$message.success("已重置为当前默认信息!")
-    },
-    
+    }),
     /**重要信息操作 */
     //选择业态/集团运营部门
     Selectformat(item, datalist) {
@@ -221,7 +209,6 @@ export default {
           );
         }
     },
-    //点击确定将选择的业态加入展示框中
     showformat() {
       this.$confirm("是否确定选择这些业态?", "提示", {
         confirmButtonText: "确定",
@@ -294,14 +281,14 @@ export default {
         });
     },
     //删除tags当前业态选择
-    Deltags(tag){
+    Deltags(tag,index){
       this.$confirm("是否取消选择当前业态?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
         center: true
       }).then(()=>{
-        this.selectformatlist.splice(this.selectformatlist.indexOf(tag), 1);
+        this.selectformatlist.splice(index, 1);
         const newArr = JSON.parse(JSON.stringify(this.selectformatlist));
         this.ImpotantInfo.formats = newArr;
         this.FormatsIselect();
@@ -311,7 +298,7 @@ export default {
       })
     },
     //保存重要信息
-    SaveImportantInfo() {
+    SaveImportantInfo:_debounce(function(_type, index, item){
       this.$refs["ImpotantInfo"].validate(valid => {
         if (valid) {
             let instate=this.ImpotantInfo.formats.map(item=>{return item.id});
@@ -327,16 +314,27 @@ export default {
           return false;
         }
       });
-    },
+    }),
     /**集团操作 */
     //归档
-    PageHode(){
+    PageHode:_debounce(function(_type, index, item){
+      this.$confirm("是否归档当前集团?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      }).then(() => {
         pagehole({id:this.Basicinfo.id}).then(res=>{
           this.SetBlocdialog=false;
           this.$parent.getBlocList(1);
           this.$message.success("集团归档成功!")
+        }).catch(err=>{
+          this.$message.error("集团归档失败!")
         })
-    },
+      }).catch(()=>{
+        this.$message.info("已取消归档该集团!")
+      })
+    }),
     //删除集团
     DelHode(){
       this.$confirm("是否删除当前集团?", "提示", {
@@ -361,7 +359,7 @@ export default {
       this.$refs['Basicinfo'].resetFields();
       this.$refs['ImpotantInfo'].resetFields();
       this.activeName="Basicinfo";
-      this.$parent.getBlocList(1);
+      this.$parent.getBlocList(this.Nowpage);
     }
   }
 };
@@ -373,6 +371,8 @@ export default {
   }
   .el-dialog__body {
     padding: 0;
+    padding-top: 48px;
+    height: 100%;
     .el-tabs--left .el-tabs__header.is-left {
       width: 180px;
     }

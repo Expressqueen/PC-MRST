@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="创建集团" :visible.sync="Addblocdialog" width="960px" :close-on-click-modal="false">
+  <el-dialog title="创建集团" :visible.sync="Addblocdialog" width="960px" :close-on-click-modal="false" @close="CloseBloc">
     <el-form
       :model="createBloc"
       label-position="right"
@@ -9,17 +9,20 @@
       :rules="Blocformrule"
     >
       <el-form-item label="集团logo" prop="grouplogourl">
-        <el-upload
-          class="avatar-uploader"
-          action="https://jsonplaceholder.typicode.com/posts/"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-          v-loading="loading"
-        >
+        <!-- <el-upload
+            class="avatar-uploader"
+            ref="uploadImg"
+            action="string"
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :http-request="UploadImg"
+            :on-success="handleAvatarSuccess"
+            v-loading="loading"
+          >
           <img v-if="createBloc.grouplogourl" :src="createBloc.grouplogourl" class="avatar" />
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-        </el-upload>
+        </el-upload> -->
+        <up-img :Imgurl.sync="createBloc.grouplogourl" @callvalidImg="handleAvatarSuccess"></up-img>
       </el-form-item>
       <el-form-item label="集团名称" prop="Groupname">
         <el-input v-model="createBloc.Groupname" autocomplete="off" placeholder="集团名称"></el-input>
@@ -70,8 +73,12 @@
   </el-dialog>
 </template>
 <script>
-import { FormatList,AddBloc } from "@/api/index";
+import { FormatList,AddBloc,Filetool } from "@/api/index";
+import {validTellpone} from '@/utils/validate'
+import { _debounce } from '@/utils/index'
+import UpImg from '@/views/BlocGroup/UploadImg'
 export default {
+  components:{UpImg},
   data() {
     let validformats=(rule, value, callback)=>{
       if (value.length==0) {
@@ -99,12 +106,13 @@ export default {
         formatsList: []
       },
       Blocformrule: {
-        // grouplogourl: [
-        //   { required: true, message: "请上传集团logo", trigger: "blur" }
-        // ],
+        grouplogourl: [
+             { required: true, message: "请上传集团logo",trigger:"blur"},
+        ],
         Groupname: [
           { required: true, message: "请输入集团名称", trigger: "blur" }
         ],
+        contactpone:[{validator:validTellpone}],
         formats: [
           { validator: validformats, trigger: "blur",required: true }
         ]
@@ -113,28 +121,16 @@ export default {
       selectformatlist:[]
     };
   },
-  mounted() {
-    FormatList().then(res => {
-      this.createBloc.formatsList = res.data.data;
-    });
-  },
   methods: {
-    handleAvatarSuccess(res, file) {
-      this.createBloc.grouplogourl = URL.createObjectURL(file.raw);
-      this.loading = false;
+    //获取业态列表
+    GetFormas(){
+      FormatList().then(res => {
+        this.createBloc.formatsList = res.data.data;
+      });
     },
-    beforeAvatarUpload(file) {
-      this.loading = true;
-      // const isJPG = file.type === 'image/jpeg';
-      // const isLt2M = file.size / 1024 / 1024 < 2;
-
-      // if (!isJPG) {
-      //   this.$message.error('上传头像图片只能是 JPG 格式!');
-      // }
-      // if (!isLt2M) {
-      //   this.$message.error('上传头像图片大小不能超过 2MB!');
-      // }
-      // return isJPG && isLt2M;
+    //图片上传成功的回调
+    handleAvatarSuccess() {
+      this.$refs.createBloc.validateField('grouplogourl');
     },
     //选择业态/集团运营部门
     Selectformat(item){
@@ -163,7 +159,8 @@ export default {
           if(this.createBloc.formats.length<1){
             this.$message.error("请至少选择一个业态")
           }else{
-            this.$message.success('选择业态成功!')
+            this.$message.success('选择业态成功!');
+            this.$refs.createBloc.validateField('formats');
           }
           this.$refs[`popover`].doClose();
         }).catch(() => {
@@ -230,13 +227,13 @@ export default {
       })
     },
     //创建集团，立即创建
-    CreatGroup(){
+    CreatGroup:_debounce(function(_type, index, item){
       this.$refs['createBloc'].validate((valid) => {
           if (valid) {
             let instate=this.createBloc.formats.map(item=>{return item.id});
             let params={
               name:this.createBloc.Groupname,
-              // img:this.createBloc.grouplogourl,
+              cy_img:this.createBloc.grouplogourl,
               instate:instate,
               person:this.createBloc.contact,
               phone:this.createBloc.contactpone,
@@ -246,22 +243,31 @@ export default {
               this.$message.success("集团创建成功");
               this.Addblocdialog=false;
               this.$parent.getBlocList(1);
+              this.$refs['createBloc'].resetFields();
+            }).catch(err=>{
+              this.$message.error("集团创建失败")
             })
           } else {
-            console.log('error submit!!');
+            this.$message.info("请输入必填项")
             return false;
           }
       });
-    },
+    }),
     //重置
     RestGroup(){
       this.$refs['createBloc'].resetFields();
-      this.createBloc.GroupdivisonList.forEach(ele=>{
-        ele.selectli=false;
-      });
+      if(this.createBloc.GroupdivisonList!=undefined){
+        this.createBloc.GroupdivisonList.forEach(ele=>{
+          ele.selectli=false;
+        });
+      }
       this.createBloc.formatsList.forEach(ele=>{
         ele.selectli=false;
       })
+    },
+    //集团弹出层关闭清空表单
+    CloseBloc(){
+      this.RestGroup()
     }
   }
 };

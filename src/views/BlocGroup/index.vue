@@ -25,15 +25,12 @@
       </div>
       <ul class="showGrouplist">
         <li v-for="(item,index) in BlocGrouplist" :key="index" @click="openProduct(item.id)">
-          <!-- <span>{{item.cy_img}}</span> -->
           <span>
-            <img
-              src="https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
-            />
+            <el-image :src="item.cy_img"></el-image>
           </span>
           <span>{{item.cy_name}}</span>
           <span>{{item.create_time}}</span>
-          <span @click.stop="SetGroup(item)">
+          <span @click.stop="SetGroup(item,)">
             <i class="el-icon-s-tools"></i>
           </span>
         </li>
@@ -48,6 +45,7 @@
         @current-change="CurrentChange"
         align="center"
         style="margin-top:50px"
+        v-show="!searchres"
       ></el-pagination>
     </div>
     <!-- 创建集团 -->
@@ -102,7 +100,6 @@ export default {
     //集团搜索
     searchBlocgroup(){
       this.getBlocList(1,this.SearchBloc);
-      
     },
     //清空搜索
     clearSearch(){
@@ -110,17 +107,20 @@ export default {
     },
     //点击下一页
     CurrentChange(val) {
-        this.getBlocList(val);
+      this.currentPage=val;
+      this.getBlocList(val);
     },
     //创建集团
     CreateGroup(){
         this.$refs['BlocTarget'].Addblocdialog=true;
+        //获取业态列表
+        this.$refs['BlocTarget'].GetFormas();
     },  
     //设置集团
     SetGroup(item){
       this.$refs['SetBlocgroup'].SetBlocdialog=true;
       this.GetBlocInfo(item.id);
-      
+      this.$refs['SetBlocgroup'].Nowpage=this.currentPage;
     },
     //集团详情
     GetBlocInfo(itemId){
@@ -188,10 +188,13 @@ export default {
         span {
           flex: 1;
           text-align: center;
-          img {
-            width: 112px;
-            height: 56px;
-            vertical-align: middle;
+          
+          .el-image{
+            // img {
+              width: 112px;
+              height: 56px;
+              vertical-align: middle;
+            // }
           }
         }
       }

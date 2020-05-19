@@ -8,7 +8,7 @@
         </span>
       </div>
       <div class="persstable">
-        <el-table :data="tableData" stripe style="width: 100%" :max-height="tableheight"> 
+        <el-table :data="tableData" stripe style="width: 100%" :max-height="tableheight">
           <el-table-column prop="id" v-if="show"></el-table-column>
           <el-table-column prop="rolename" label="名称"></el-table-column>
           <el-table-column prop="iden" label="身份"></el-table-column>
@@ -116,7 +116,7 @@ export default {
           return false;
         }
       });
-      
+
     },
     //创建权限组
     Createper(row){
@@ -138,9 +138,9 @@ export default {
       this.$refs['Setpermisson'].getpersionform.identity=row.ident;
       this.$refs["Setpermisson"].selectPid=row.id;
       this.$refs["Setpermisson"].stateType="Edit";
-      if(row.iden=="负责人") 
+      if(row.iden=="负责人")
         this.$refs['Setpermisson'].getpersionform.DepartHead="1";
-      else 
+      else
         this.$refs['Setpermisson'].getpersionform.DepartHead="0";
       let params={
         role_id:row.id,
@@ -148,6 +148,7 @@ export default {
       }
       EditAroRuLi(params).then(res=>{
         this.$refs["Setpermisson"].SetPermissionlist=res.data.data;
+         debugger
         this.$refs["Setpermisson"].RightnowSelectid=this.$refs["Setpermisson"].getCheckAllid();
       })
     },
@@ -164,6 +165,9 @@ export default {
   margin: 0 auto;
   padding: 40px 0;
   height: calc(100vh - 56px);
+  .el-dialog__body{
+    padding-top: 78px;
+  }
   .el-dialog__footer{
     text-align: center;
   }

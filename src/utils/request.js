@@ -54,11 +54,6 @@ service.interceptors.response.use(
     if (response.data.code === 0) {
       return Promise.resolve(response);
     } else {
-      Message({
-        message: response.data.msg,
-        type: 'error',
-        duration: 3 * 1000
-      });
       return Promise.reject(response.data);
     }
   },

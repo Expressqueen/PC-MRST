@@ -26,30 +26,25 @@ export function validUsername(str) {
  */
 //验证密码
 export let validpass=(rule,value,callback)=>{
-  let reg=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,18}$/
-  if(value===""){
-    callback(new Error('请输入密码'));
-  }else{
+  if (value !== '') { 
+    var reg=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,18}$/;
     if(!reg.test(value)){
       callback(new Error('密码必须由6-18位的大小写字母和数字组成'));
-    }else{
-      callback();
     }
-  } 
+  }else{
+    callback(new Error('请输入密码'));
+  }
+  callback();
 }
 //验证手机号
 export let validTellpone=(rule,value,callback)=>{
-  if (value === '') {
-    callback(new Error('请输入手机号码'));
-  } else {
-    if (value !== '') { 
-      var reg=/^1[3456789]\d{9}$/;
-      if(!reg.test(value)){
-        callback(new Error('请输入有效的手机号码'));
-      }
+  if (value !== '') { 
+    var reg=/^1[3456789]\d{9}$/;
+    if(!reg.test(value)){
+      callback(new Error('请输入有效的手机号码'));
     }
-    callback();
   }
+  callback();
 }
 //验证邮箱
 export let validEmail=(rule,value,callback)=>{

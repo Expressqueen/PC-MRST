@@ -15,18 +15,18 @@
       <div class="writeregs">
         <el-form label-position="top" :model="Regisform" ref="Regisform" :rules="RegisRule">
           <el-form-item label="真实姓名" prop="name">
-            <el-input v-model="Regisform.name"></el-input>
+            <el-input v-model="Regisform.name" @keyup.native="validblur('Regisform','name')"></el-input>
           </el-form-item>
           <el-form-item label="手机号码" prop="tellpone">
-            <el-input v-model="Regisform.tellpone"  @keyup.native="getGameList"></el-input>
+            <el-input v-model="Regisform.tellpone"></el-input>
           </el-form-item>
           <el-form-item prop="Vertcode">
-            <el-input v-model="Regisform.Vertcode" placeholder="请输入验证码">
+            <el-input v-model="Regisform.Vertcode" placeholder="请输入验证码" @keyup.native="validblur('Regisform','Vertcode')">
               <template slot="append">获取验证码</template>
             </el-input>
           </el-form-item>
           <el-form-item label="选择部门" prop="deptname">
-            <el-select v-model="Regisform.deptname" placeholder="请选择部门">
+            <el-select v-model="Regisform.deptname" placeholder="请选择部门" @change="validblur('Regisform','deptname')">
               <el-option
                 v-for="item in Regisform.departlist"
                 :key="item.id"
@@ -36,7 +36,7 @@
             </el-select>
           </el-form-item>
           <el-form-item prop="position">
-            <el-input v-model="Regisform.position" placeholder="填写职位"></el-input>
+            <el-input v-model="Regisform.position" placeholder="填写职位" @keyup.native="validblur('Regisform','position')"></el-input>
           </el-form-item>
           <el-form-item label="设置密码" prop="setpassword">
             <el-input v-model="Regisform.setpassword" type="password" placeholder="输入密码"></el-input>
@@ -56,6 +56,7 @@
 <script>
 import { validpass,validTellpone} from "@/utils/validate";
 import {getARegi,ARegi} from '@/api/index'
+import { _debounce } from '@/utils/index'
 export default {
   name: "Register",
   data() {
@@ -64,9 +65,8 @@ export default {
         callback(new Error("请输入确认密码"));
       } else if (value !== this.Regisform.setpassword) {
         callback(new Error("两次输入密码不一致!"));
-      } else {
-        callback();
-      }
+      } 
+      callback();
     };
     return {
       inviter: "唐璐",
@@ -85,12 +85,12 @@ export default {
       },
       RegisRule: {
         name:[{required:true,message:"请输入真实姓名",trigger:'blur'}],
-        tellpone:[{validator:validTellpone,trigger:'blur'}],
+        tellpone:[{validator:validTellpone},{required:true,message:"请输入手机号码",trigger:'blur'}],
         Vertcode:[{required:true,message:"请输入验证码",trigger:'blur'}],
         deptname:[{required:true,message:'请选择部门',trigger:'change'}],
         position:[{required:true,message:"请填写职位",trigger:'blur'}],
-        setpassword: [{ validator: validpass, trigger: "blur" }],
-        confpassword: [{ validator: Aginvalidpass, trigger: "blur" }]
+        setpassword: [{ validator: validpass},{required:true,message:"请输入密码",trigger:'blur'}],
+        confpassword: [{ validator: Aginvalidpass},{required:true,message:"请输入确认密码",trigger:'blur'}]
       }
     };
   },
@@ -98,8 +98,9 @@ export default {
     this.GetInviinfo();
   },
   methods: {
-    getGameList(){
-      this.$refs.Regisform.validateField('tellpone');
+    //所有输入框进行输入验证
+    validblur(FormName,proname){
+      this.$refs[FormName].validateField(proname);
     },
     //获取邀请人信息
     GetInviinfo(){
@@ -132,7 +133,7 @@ export default {
       }
     },
     //提交注册
-    SubApply() {
+    SubApply:_debounce(function(_type, index, item){
       this.$refs["Regisform"].validate(valid => {
         if (valid) {
           let parmars={
@@ -144,24 +145,20 @@ export default {
             dep_id:this.Regisform.deptname
           }
           ARegi(parmars).then(res=>{
-            if(res.data.code==0){
               this.$message({
                 type:'success',
                 msg:"注册成功"
               })
-            }else{
-              this.$message({
-                type:'error',
-                msg:res.data.msg
-              })
-            }
+          }).catch(err=>{
+            this.$message.error("注册失败")
           })
         } else {
-          console.log("error submit!!");
+          this.$message.info("请输入必填信息!");
           return false;
         }
       });
-    }
+    })
+      
   }
 };
 </script>

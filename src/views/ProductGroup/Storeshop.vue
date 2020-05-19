@@ -158,8 +158,10 @@ export default {
     },
     //节点选中事件
     Selectnode(data, node, obj) {
+      debugger;
     },
     handleClick(data, checked, node) {
+      debugger;
       this.showareatitle = "";
       // this.i++;
       // if (this.i % 2 === 0) {
@@ -174,29 +176,12 @@ export default {
       // }
 
       //获取当前选中的父级+子集数据
-      // let getnodes = this.$refs.areatree
-      //   .getHalfCheckedNodes()
-      //   .concat(this.$refs.areatree.getCheckedNodes());
-      // getnodes.forEach(ele => {
-      //   this.showareatitle += ele.label + "/";
-      // });
-      // console.log(this.getParentTag(event.currentTarget));
-    },
-    //获取所有的父元素
-
-    getParentTag(startTag, parentTagList = []) {
-      // 传入标签是否是DOM对象
-      if (!(startTag instanceof HTMLElement)) return console.error('receive only HTMLElement');
-      // 父级标签是否是body,是着停止返回集合,反之继续
-      if ('BODY' !== startTag.parentElement.nodeName) {
-        // 放入集合
-        parentTagList.push(startTag.parentElement.innerText)
-        // 再上一层寻找
-        return this.getParentTag(startTag.parentElement, parentTagList)
-      }
-      // 返回集合,结束
-      else return parentTagList;
- 
+      let getnodes = this.$refs.areatree
+        .getHalfCheckedNodes()
+        .concat(this.$refs.areatree.getCheckedNodes());
+      getnodes.forEach(ele => {
+        this.showareatitle += ele.label + "/";
+      });
     }
   }
 };

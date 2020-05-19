@@ -148,10 +148,7 @@ export function toggleClass(ele,cls){
 export const _debounce = (fn, t) => {
   let delay = t || 500;
   let timer;
-  console.log(fn)
-  console.log(typeof fn)
   return function () {
-    debugger
       let args = arguments;
       if(timer){
           clearTimeout(timer);

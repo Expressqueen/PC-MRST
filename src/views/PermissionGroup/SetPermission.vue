@@ -149,6 +149,10 @@ export default {
     },
     //保存权限组
     SavePermis() {
+      if(this.getCheckAllid().length<1){
+        this.$message.info("请选择权限");
+        return;
+      }
       //创建权限组
       if (this.stateType == "Add") {
         let params = {
@@ -162,14 +166,19 @@ export default {
           this.Setpresion = false;
           this.$parent.Createpresion = false;
           this.$parent.getRolelist();
+          this.$message.success("权限创建成功!")
+        }).catch(err=>{
+          this.$message.error("权限创建失败!")
         });
       } else {   //编辑权限组
+        debugger
         let params = {
           role_id: this.selectPid,
           ident: this.getpersionform.identity,
           rule_id: this.getCheckAllid(),
           del_rule_id: this.getCheckDelid(this.RightnowSelectid,this.getCheckAllid())
         };
+        
         EditAJuRuLiUp(params).then(res => {
           this.Setpresion = false;
           this.$message({
@@ -177,6 +186,8 @@ export default {
             message: "权限设置成功!"
           });
           this.$parent.getRolelist();
+        }).catch(err=>{
+          this.$message.error("权限设置失败");
         });
       }
     }

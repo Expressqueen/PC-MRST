@@ -7,7 +7,7 @@
           <el-button type="primary" @click="AddRole">
             <i class="el-icon-circle-plus-outline"></i>创建权限
           </el-button>
-          <el-button type="warning" @click="EditRole('')">
+          <el-button type="warning" @click="EditRole">
             <i class="el-icon-edit"></i>编辑权限
           </el-button>
           <el-button type="danger" @click="DelRole">
@@ -24,7 +24,8 @@
             v-model="showPerims"
           >
             <template slot="title">
-              {{item.conname}}<i class="el-icon-edit" style="margin-left:5px" @click.stop="EditRole(item.id)"></i>
+              {{item.conname}}<i class="el-icon-edit  blue" style="margin:0 5px 0 10px" @click.stop="EditRole(item.id)"></i>
+              <i class="el-icon-delete red" style="margin:0 5px" @click.stop="DelRole(item.id)"></i>
             </template>
             <el-row>
               <el-button
@@ -52,7 +53,7 @@
         :rules="permisformrule"
       >
         <el-form-item label="父级" prop="pid">
-          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点">
+          <el-select v-model="Createpermisform.pid" placeholder="请选择父级节点" :disabled="isEdit">
             <el-option
               v-for="(item,index) in Createpermisform.PlevelList"
               :key="index"
@@ -119,8 +120,8 @@
             </div>
           </el-popover>
         </el-form-item>
-        <el-form-item label="备注" prop="note">
-          <el-input v-model="Createpermisform.note" autocomplete="off" placeholder="输入备注"></el-input>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="Createpermisform.remark" autocomplete="off" placeholder="输入备注"></el-input>
         </el-form-item>
         <el-form-item label="排序" prop="sort">
           <el-input-number v-model="Createpermisform.sort" controls-position="right" :min="0"></el-input-number>
@@ -149,6 +150,36 @@ export default {
   name: "PermissionManager",
   components: { GetIcon },
   data() {
+    //路径限制
+    let routePass=(rule, value, callback)=>{
+      if (value === "") {
+        callback(new Error("请输入路径"));
+      }
+      else {
+        if (value !== '') {
+          var reg=/^[A-Za-z0-9/?=]+$/;
+          if(!reg.test(value)){
+            callback(new Error('请输入正确的路径'));
+          }
+        }
+        callback();
+      }
+    };
+    //排序限制
+    let sortPass=(rule, value, callback)=>{
+      if (value === "") {
+        callback(new Error("请输入排序"));
+      }
+      else {
+        if (value !== '') {
+          var reg=/^[0-9]{1,4}$/;
+          if(!reg.test(value)){
+            callback(new Error('最大输入位数为4位'));
+          }
+        }
+        callback();
+      }
+    };
     return {
       AroList: [],
       showPerims: "", //当前操作的权限面板
@@ -157,6 +188,7 @@ export default {
       // selecticonclass: "",
       Pretitle: "创建权限",
       ButtonroleId: "",
+      isEdit:false,
       Createpermisform: {
         pid: "",
         PlevelList: [],
@@ -172,10 +204,10 @@ export default {
       permisformrule: {
         pid: [{ required: true, message: "请选择父级", trigger: "change" }],
         conname: [{ required: true, message: "请填写权限名称", trigger: "blur" }],
-        route: [{ required: true, message: "请填写路径", trigger: "blur" }],
+        route: [{ validator: routePass, trigger: "blur",required:true }],
         dis: [{ required: true, message: "请选择展示方式", trigger: "change" }],
         icon: [{required: true, message: "请至少选择一个图标", trigger: "change"}],
-        sort: [{ required: true, message: "请输入排序", trigger: "blur" }]
+        sort: [{ required: true, validator:sortPass, trigger: "blur" }]
       },
       fileList: [
         {
@@ -207,33 +239,29 @@ export default {
     AddRole(){
       this.Pretitle = "创建权限";
       this.dialogCreatepermis=true;
+      this.isEdit=false;
     },
     //修改权限
-    EditRole(pid) {
+    EditRole:_debounce(function(_type, index, item){
       this.Pretitle = "编辑权限";
-      _debounce(function(_type, index, item){
-        debugger
-        // do something ...
-        console.log(123)
-        if(pid==undefined||pid==""||pid==null){
+      this.isEdit=true;
+      let pid=_type;
+      if(_type instanceof Object){
         pid=this.ButtonroleId;
-          if (this.ButtonroleId == "") {
-            this.$message.warning("请选择要编辑的权限");
-            return
-          }
+        if (this.ButtonroleId == "") {
+          this.$message.warning("请选择要编辑的权限");
+          return
         }
-        this.dialogCreatepermis = true;
-        this.getDancleInfo(pid);
-    }, 200)
-
-      
-    },
+      }else{
+        this.ButtonroleId=pid;
+      }
+      this.dialogCreatepermis = true;
+      this.getDancleInfo(this.ButtonroleId);
+    }),
+    // },
     //获取单个权限信息
     getDancleInfo(pid) {
-      let rule_id;
-      if(pid!=undefined||pid!=null||pid!="")
-      rule_id=pid
-      else rule_id=this.ButtonroleId
+      let rule_id=this.ButtonroleId;
       SearchARuCrUp({ rule_id:rule_id }).then(res => {
         let PlevelList=this.Createpermisform.PlevelList;
         this.Createpermisform=res.data.data[0];
@@ -241,30 +269,39 @@ export default {
         this.fileList.url=res.data.data[0].img;
         this.Createpermisform.icon=[this.Createpermisform.icon+''];
         this.SelectICON(this.Createpermisform.icon);
+      }).catch(err=>{
+        this.$message.error("权限列表获取失败");
       });
     },
     //删除当前权限组下的权限
-    DelRole() {
-      if (this.ButtonroleId == "") {
-        this.$message.warning("请选择要操作的权限");
-      } else {
-        this.$confirm("此操作将永久删除该权限, 是否继续?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-          .then(() => {
-            DelARuDe({ rule_id: this.ButtonroleId }).then(res => {
-              this.$message.success("权限删除成功");
-              this.getAroList();
-              this.ButtonroleId = "";
-            });
-          })
-          .catch(() => {
-            this.$message.info("已取消删除");
-          });
+    DelRole:_debounce(function(_type, index, item){
+      let rule_id=_type;
+      if(_type instanceof Object){
+        if (this.ButtonroleId == "") {
+          this.$message.warning("请选择要操作的权限");
+          return;
+        }else{
+          rule_id=this.ButtonroleId;
+        }
       }
-    },
+      this.$confirm("此操作将永久删除该权限, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          DelARuDe({ rule_id: rule_id }).then(res => {
+            this.$message.success("权限删除成功");
+            this.getAroList();
+            this.ButtonroleId = "";
+          }).catch(err=>{
+            this.$message.error("权限删除失败");
+          });
+        })
+        .catch(() => {
+          this.$message.info("已取消删除");
+        });
+    }),
     //获取当前选中的SelectRole
     SelectRole(tagid, pindex, index) {
       this.showPerims = pindex;
@@ -317,7 +354,9 @@ export default {
               this.$message.success("权限编辑成功");
               this.dialogCreatepermis = false;
               this.getAroList();
-              this.resetpermis("Createpermisform");
+              this.$refs.Createpermisform.resetFields();
+            }).catch(err=>{
+              this.$message.error("权限编辑失败!");
             });
           }
         } else {
@@ -335,12 +374,14 @@ export default {
       this.$refs[formName].resetFields();
       if (this.Pretitle == "编辑权限") {
         this.getDancleInfo();
+      }else{
+        this.showIconType=null;
       }
     }
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped="">
 .PermissionManager {
   width: 960px;
   margin: 0 auto;

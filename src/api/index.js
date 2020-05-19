@@ -15,7 +15,7 @@ export const ARoLi=(params)=>get('/ARoLi',params)   //权限组角色列表
 export const ARoRuLi=(params)=>get('/ARoRuLi',params)  //获取创建权限组结构列表
 export const PostARoRuLi=(data)=>post('/ARoRuLi',data) //创建权限组接口
 export const EditAroRuLi=(params)=>get('/ARoRuPdLi',params)  //设置权限组获取权限列表
-export const EditAJuRuLiUp=(data)=>post('/AJuRuLiUp',data) //修改权限组权限
+export const EditAJuRuLiUp=(params)=>post('/AJuRuLiUp',params) //修改权限组权限
 export const DelAroRuDel=(data)=>post('/ARoRuDel',data)    //删除权限组
 /** 权限模块接口*/
 export const getPerlist=(params)=>get('/ARuLi',params)  //获取权限列表
@@ -35,11 +35,12 @@ export const pagehole=(params)=>get('/CyKeep',params) //归档集团
 export const DelBloc=(params)=>get('/CyDel',params)   //删除集团
 /**业态接口 */
 export const FormatList=(params)=>get('/InState',params) //获取业态列表
+export const InState=(data)=>post('/InState',data) //创建业态
+export const deleteInState=(params)=>get('/InStateDel',params)//删除业态
+export const GoodsIns=(data)=>post('/GoodsIns',data)//业态产品设置保存
 /**产品接口 */
 export const GoodsList=(params)=>get('/Goods',params)  //获取产品列表
 export const GoodIns=(params)=>get('/GoodsIns',params) //业态下产品列表
-/**d大区接口 */
-export const Arelist=(params)=>get('/Are',params)    //大区列表
 
 
 
