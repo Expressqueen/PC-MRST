@@ -19,7 +19,7 @@
                 ref="areatree"
                 check-strictly
                 show-checkbox
-                @check-change="handleClick"
+                @node-click="Selectnode"
               ></el-tree>
             </div>
             <p slot="reference" class="levelarea">
@@ -59,34 +59,28 @@
   </div>
 </template>
 <script>
-// import the component
-import Treeselect from "@riophae/vue-treeselect";
-// import the styles
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 export default {
   name: "Storeshop",
-  components: { Treeselect },
   data() {
     return {
       Blocimg:
         "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
       value: null,
-      // define options
       options: [
         {
-          id: "a",
+          id: "1",
           label: "a",
           children: [
             {
-              id: "aa",
+              id: "1-1",
               label: "aa"
             },
             {
-              id: "ab",
+              id: "1-2",
               label: "ab",
               children: [
                 {
-                  id: "abc",
+                  id: "1-2-1",
                   label: "abc"
                 }
               ]
@@ -94,12 +88,31 @@ export default {
           ]
         },
         {
-          id: "b",
+          id: "2",
           label: "b"
         },
         {
-          id: "c",
+          id: "3",
           label: "c"
+        }
+      ],
+      list: [
+        {
+          name: '黄焖鸡米饭111111111',
+          cList: [
+            { name: '二级黄焖鸡' },
+            {
+              name: 'one chicken',
+              cList: [
+                { name: '三级黄焖鸡3333', cList: [{ name: '四级黄焖鸡' }] }
+              ]
+            }
+          ]
+        },
+        { name: '2222222222' },
+        {
+          name: '黄焖鸡米饭33333333',
+          cList: [{ name: '二级黄焖鸡' }, { name: 'one chicken' }]
         }
       ],
       storelist: [
@@ -157,32 +170,33 @@ export default {
       return data.label.indexOf(value) !== -1;
     },
     //节点选中事件
-    Selectnode(data, node, obj) {
-      debugger;
+    Selectnode(data,node,ele){
+      this.$refs.areatree.setCheckedNodes([]);
+      this.$refs.areatree.setCheckedNodes([data]);
+      this.showareatitle=this.findPnodeId(this.options,data.id);
     },
-    handleClick(data, checked, node) {
-      debugger;
-      this.showareatitle = "";
-      // this.i++;
-      // if (this.i % 2 === 0) {
-      //   if (checked) {
-      //     this.$refs.areatree.setCheckedNodes([]);
-      //     this.$refs.areatree.setCheckedNodes([data]);
-      //     //交叉点击节点
-      //   } else {
-      //     this.$refs.areatree.setCheckedNodes([]);
-      //     //点击已经选中的节点，置空
-      //   }
-      // }
+    findPnodeId(array, id){
+        let stack = [];
+            let going = true;
+            let walker = (array, id) => {
+                array.forEach(item => {
+                    if (!going) return;
+                    stack.push(item['label']);
+                    if (item['id'] === id) {
+                        going = false;
+                    } else if (item['children']) {
+                        walker(item['children'], id);
+                    } else {
+                        stack.pop();
+                    }
+                });
+                if (going) stack.pop();
+            }
+            walker(array, id);
+            return stack.join('/');
 
-      //获取当前选中的父级+子集数据
-      let getnodes = this.$refs.areatree
-        .getHalfCheckedNodes()
-        .concat(this.$refs.areatree.getCheckedNodes());
-      getnodes.forEach(ele => {
-        this.showareatitle += ele.label + "/";
-      });
     }
+    
   }
 };
 </script>
@@ -288,6 +302,24 @@ export default {
   }
   .el-tree-node__content {
     height: 40px;
+    position: relative;
+    .el-checkbox{
+      position: absolute;
+      right: 0;
+      .el-checkbox__input .el-checkbox__inner{
+        background: none;
+        border: none;
+      }
+      .el-checkbox__inner::after{
+        width: 7px;
+        height: 11px;
+        border-color: #096DD9;
+        top: -2px;
+      }
+    }
+  }
+  .el-tree-node.is-expanded.is-current.is-focusable.is-checked>.el-tree-node__content{
+    background: #F5F7FA;
   }
 }
 </style>
