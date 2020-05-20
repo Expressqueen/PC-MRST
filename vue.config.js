@@ -48,6 +48,9 @@ module.exports = {
       }
     }
   },
+  configureWebpack: config => {
+    config.entry.app = ["babel-polyfill", "./src/main.js"];
+  },
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test

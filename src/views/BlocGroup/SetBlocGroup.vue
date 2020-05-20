@@ -364,15 +364,13 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .setblocgroup {
   .el-tabs--left .el-tabs__item.is-left {
     text-align: center;
   }
   .el-dialog__body {
     padding: 0;
-    padding-top: 48px;
-    height: 100%;
     .el-tabs--left .el-tabs__header.is-left {
       width: 180px;
     }

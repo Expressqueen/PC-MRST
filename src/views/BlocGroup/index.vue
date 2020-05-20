@@ -149,7 +149,7 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .BlocGroup {
   width: 960px;
   margin: 0 auto;

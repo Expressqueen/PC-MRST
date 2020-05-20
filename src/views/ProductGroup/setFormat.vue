@@ -1,5 +1,5 @@
 <template>
-        <el-dialog title="业态产品设置" :visible.sync="mask" class="dialog">
+        <el-dialog title="业态产品设置" :visible.sync="maskDialog" class="dialog">
             <el-form :model="form">
                 <ul>
                     <li v-for="(item,index) in goodData" :key="index">
@@ -28,7 +28,7 @@
                                         <div class="droplist">
                                             <ul class="el-scrollbar__view el-select-dropdown__list">
                                                 <li v-for="(e,i) in divisionArr" :key="i" 
-                                                :class="[{selected:''},'el-select-dropdown__item']"
+                                                :class="[{selected:e.checked},'el-select-dropdown__item']"
                                                 @click="Selectformat(e)">
                                                     {{e.depname}}
                                                     <i class="el-icon-check right" v-show="e.checked"></i>
@@ -38,7 +38,7 @@
                                                 <el-button type="primary" size="small" @click="showformat(itm)">确定</el-button>
                                                 <el-button size="small" @click="cancleformat(itm)">取消</el-button>
                                             </el-row>
-                                        </div>
+                                        </div>  
                                     </el-popover>
                                 </el-form-item>
                             </div>
@@ -59,8 +59,9 @@ export default {
     name:"setFormat",
     data(){
         return{
-            mask:false,
+            maskDialog:false,
             goodData:[],
+            goods: [],
             divisionArr:[],
             tagArrs:[],
             arr:[],
@@ -76,36 +77,60 @@ export default {
             resource: '',
             desc: ''
             },
-            formLabelWidth: '120px'
-
+            formLabelWidth: '120px',
+            GroupId:0,
+            productId:0,
+            goodlist:[],
+            defaultList:[],
+            defaultDepidList:[],
+            defaultDepList:[]
         }
     },
     mounted(){
-        this.getGood();
-        this.getDivision();
+       console.log(this.goodlist)
     },
     methods:{
-        getGood(){
-            GoodsList().then(res=>{
-                res.data.data.map(v=>{
-                    v.children.map(e=>{
-                        e.checked = false
-                        e.tagArr = []
+        getGood(){  
+            this.$parent.goodlist.map(i=>{
+                if(i.children.length){
+                    i.children.map(j=>{
+                        this.defaultList.push(j.id);
+                        this.defaultDepidList=j.depid.split(",")
                     })
-                })
-                this.goodData=res.data.data;
-                console.log(this.goodData)
+                }
+                    
             })
-            
-        },
-        getDivision(){
+
+            //获取部门数据
             AJuDeps().then(res=>{
                 res.data.data.FirstList.map(v=>{
                     v.checked = false
                 })
+                res.data.data.FirstList.map((v,i)=>{
+                    var arr = this.defaultDepidList.filter(e=> parseInt(e) == v.id);
+                    if(arr.length){
+                        this.defaultDepList.push(v)
+                    }
+                })
                 this.divisionArr=res.data.data.FirstList;
             })
+            
+            //获取产品数据
+            GoodsList().then(res=>{
+                res.data.data.map(v=>{
+                    v.children.map(e=>{
+                        e.checked = this.defaultList.indexOf(e.id) == -1 ? false : true;
+                        e.tagArr = this.defaultList.indexOf(e.id) == -1 ? [] : this.defaultDepList
+                    })
+                })
+                this.goodData=res.data.data;
+            })
+            
         },
+        getDivision(){
+            
+        },
+        //便签去重
         unique(arr){            
             for(var i=0; i<arr.length; i++){
                 for(var j=i+1; j<arr.length; j++){
@@ -117,6 +142,7 @@ export default {
             }
             return arr;
         },
+        //选择集团部门
         Selectformat(e){
             e.checked = !e.checked
             if(e.checked){
@@ -130,6 +156,7 @@ export default {
                 })
             }
         },
+        //删除标签
         tagClose(tag,itm){
             itm.tagArr.map((v,i)=>{
                 if(v.id === tag.id){
@@ -137,6 +164,7 @@ export default {
                 }
             })
         },
+        //展示被选中的
         showDown(itm){
             this.divisionArr.map(v=>v.checked = false)
             this.divisionArr.map(v=>{
@@ -187,6 +215,7 @@ export default {
                 });
                 this.$refs[`popover`].doClose();
             }).catch(() => {
+                itm.tagArr = []
                 this.$message({
                     type: 'info',
                     message: '已取消修改选择业态'
@@ -197,11 +226,30 @@ export default {
             itm.checked = value;
         },
         preserve(){
-            GoodsIns({
-
-            }).then(res=>{
-
+            this.goodData.map((v,i)=>{
+                if(v.children.length){
+                    v.children.map((it,ind)=>{
+                        if(it.checked){
+                            var obj = {
+                                goodsid: it.id,
+                                depid: [],
+                            } 
+                            it.tagArr.map((item,index)=>{
+                                obj.depid.push(item.id)
+                            })
+                            this.goods.push(obj)
+                        }
+                    })
+                }
             })
+            GoodsIns({
+                instateid: this.productId,
+                goods: this.goods,
+                cyid:this.GroupId
+            }).then(res=>{
+                this.maskDialog = false;
+            })
+            console.log(this.goods,this.productId)
         }
     }
 }
@@ -215,6 +263,7 @@ export default {
             height: calc(100% - 50px);
         }
         .el-form{
+            width: 100%;
             height:100%;
             ul{
                 margin-left:20px;  

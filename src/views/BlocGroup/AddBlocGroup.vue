@@ -40,7 +40,7 @@
         <el-popover placement="bottom-start" width="390" trigger="click" :ref="`popover`">
             <div class="droplist">
                 <ul class="el-scrollbar__view el-select-dropdown__list">
-                    <li v-for="(item,index) in createBloc.formatsList" :key="index" 
+                    <li v-for="(item,index) in createBloc.formatsList" :key="index"
                     :class="[{selected:item.selectli},'el-select-dropdown__item']"
                     @click="Selectformat(item)">
                         {{item.name}}
@@ -299,6 +299,7 @@ export default {
   .permisform {
     width: 505px;
     margin: 0 auto;
+	   // padding-top:40px;
     .el-form-item__label {
       color: #666666;
       font-weight: 400;
@@ -328,7 +329,7 @@ export default {
         }
     }
   }
-  
+
   .el-dialog__body {
     overflow: auto;
     height: calc(100% - 50px);

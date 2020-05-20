@@ -181,7 +181,7 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .ProductZone {
   .el-link {
     padding: 0 25px;

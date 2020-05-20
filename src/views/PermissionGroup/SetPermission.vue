@@ -171,14 +171,13 @@ export default {
           this.$message.error("权限创建失败!")
         });
       } else {   //编辑权限组
-        debugger
         let params = {
           role_id: this.selectPid,
           ident: this.getpersionform.identity,
           rule_id: this.getCheckAllid(),
           del_rule_id: this.getCheckDelid(this.RightnowSelectid,this.getCheckAllid())
         };
-        
+
         EditAJuRuLiUp(params).then(res => {
           this.Setpresion = false;
           this.$message({
@@ -194,7 +193,7 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .setpermission {
   .el-dialog__body {
     padding: 15px;

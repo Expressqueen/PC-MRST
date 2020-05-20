@@ -148,7 +148,6 @@ export default {
       }
       EditAroRuLi(params).then(res=>{
         this.$refs["Setpermisson"].SetPermissionlist=res.data.data;
-         debugger
         this.$refs["Setpermisson"].RightnowSelectid=this.$refs["Setpermisson"].getCheckAllid();
       })
     },
@@ -159,15 +158,12 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .PermissionGroup {
   width: 960px;
   margin: 0 auto;
   padding: 40px 0;
   height: calc(100vh - 56px);
-  .el-dialog__body{
-    padding-top: 78px;
-  }
   .el-dialog__footer{
     text-align: center;
   }

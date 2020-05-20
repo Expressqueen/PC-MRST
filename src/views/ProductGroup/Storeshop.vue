@@ -5,6 +5,8 @@
         <li class="selectcaster">
           <img :src="Blocimg" alt class="blocimg" />
           <i class="el-icon-arrow-right"></i>
+          <span>大卖场</span>
+          <i class="el-icon-arrow-right"></i>
           <el-popover placement="bottom-start" width="400" trigger="click">
             <div class="droparea">
               <el-input placeholder="请输入内容" prefix-icon="el-icon-search" v-model="Slevelarea"></el-input>
@@ -42,25 +44,15 @@
       </ul>
     </div>
     <div class="storebody">
-      <div class="clearfix">
-        <el-input
-          placeholder="输入名称/编码搜索"
-          prefix-icon="el-icon-search"
-          v-model="SearchStore"
-          class="SearchStore"
-        ></el-input>
-      </div>
-      <el-table :data="tableData" style="width: 100%" :max-height="tableheight">
-        <el-table-column prop="date" label="日期" width="180"></el-table-column>
-        <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
-      </el-table>
+      <ShopList :show="false"></ShopList>
     </div>
   </div>
 </template>
 <script>
+import ShopList from '@/views/ProductGroup/Shoplist'
 export default {
   name: "Storeshop",
+  components:{ShopList},
   data() {
     return {
       Blocimg:
@@ -94,25 +86,6 @@ export default {
         {
           id: "3",
           label: "c"
-        }
-      ],
-      list: [
-        {
-          name: '黄焖鸡米饭111111111',
-          cList: [
-            { name: '二级黄焖鸡' },
-            {
-              name: 'one chicken',
-              cList: [
-                { name: '三级黄焖鸡3333', cList: [{ name: '四级黄焖鸡' }] }
-              ]
-            }
-          ]
-        },
-        { name: '2222222222' },
-        {
-          name: '黄焖鸡米饭33333333',
-          cList: [{ name: '二级黄焖鸡' }, { name: 'one chicken' }]
         }
       ],
       storelist: [
@@ -157,10 +130,6 @@ export default {
       this.$refs.areatree.filter(val);
     }
   },
-  mounted() {
-    this.tableheight =
-      document.getElementsByClassName("storebody")[0].clientHeight - 90;
-  },
   methods: {
     selectstorelable(index) {
       this.activestore = index;
@@ -200,7 +169,7 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
 .Storeshop {
   width: 1320px;
   margin: 0 auto;
@@ -282,17 +251,8 @@ export default {
       }
     }
   }
-  .storebody {
-    background: #fff;
-    height: calc(100% - 100px);
+  .storebody{
     margin-top: 20px;
-    padding: 30px 30px 0 30px;
-    .clearfix {
-      margin-bottom: 20px;
-      .SearchStore {
-        width: 320px;
-      }
-    }
   }
 }
 .droparea {

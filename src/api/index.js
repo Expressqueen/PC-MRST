@@ -1,15 +1,23 @@
 import {get,post} from '@/utils/request'
-/**组织架构接口 */
-export const AJuDeps=(params)=>get('/AJuDeps',params) //组织架构展示接口
-export const SAJuDeps=(data)=>post('/AJuDeps',data) //搜索+产看组织部门接口
-export const AJuDepC=(data)=>post('/AJuDepC',data)  //创建组织部门
-export const getAJuDepC=(params)=>get('/AJuDepC',params)  //创建组织部门获取部门角色
-export const EditRolesType=(data)=>post('/AJuRolsUp',data)  //修改部门身份账号状态
-export const EditAJuDepCUp=(data)=>post('/AJuDepCUp',data)  //编辑部门
-export const DeleteAJuDepC=(data)=>post('/AJuDepCDe',data)  //删除部门
+
+export const apiAddress = (params) => get('https://vue-js.com/api/v1/topics', params);
+//组织展示
+export const AJuDeps=(params)=>get('/AJuDeps',params);
+//组织架构部门人员
+export const staffList=(data)=>post('/AJuDeps',data);
+//创建部门获取角色
+export const AJuDepC=(params)=>get('/AJuDepC',params);
+//创建部门
+export const create=(data)=>post('/AJuDepC',data);
 export const AUsRegs=(params)=>get('/AUsRegs',params)  //邀请成员获取邀请链接
 export const getARegi=(params)=>get('/ARegi',params)  //注册页面请求数据接口
 export const ARegi=(data)=>post('/ARegi',data)  //用户注册接口
+//删除部门
+export const AJuDepCDe=(data)=>post('/AJuDepCDe',data);
+//编辑部门
+export const AJuDepCUp=(data)=>post('/AJuDepCUp',data);
+//修改身份账号
+export const AJuRolsUp=(data)=>post('/AJuRolsUp',data);
 /** 权限组接口 */
 export const ARoLi=(params)=>get('/ARoLi',params)   //权限组角色列表
 export const ARoRuLi=(params)=>get('/ARoRuLi',params)  //获取创建权限组结构列表
@@ -41,7 +49,7 @@ export const GoodsIns=(data)=>post('/GoodsIns',data)//业态产品设置保存
 /**产品接口 */
 export const GoodsList=(params)=>get('/Goods',params)  //获取产品列表
 export const GoodIns=(params)=>get('/GoodsIns',params) //业态下产品列表
-
-
-
-
+/** 门店接口 */
+export const Storelist=(params)=>get('/Site',params)  //获取门店列表
+export const Storeinfo=(params)=>get('/SiteInfo',params)  //获取门店详细信息
+export const StoreAddEdit=(data)=>post('/Site',data)    //门店新增修改
